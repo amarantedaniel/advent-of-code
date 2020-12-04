@@ -5,7 +5,7 @@ typealias Password = String
 struct Policy {
     let letter: Character
     let restrictions: [Int]
-    
+
     func validateMinMax(password: String) -> Bool {
         let min = restrictions[0]
         let max = restrictions[1]
@@ -19,7 +19,7 @@ struct Policy {
     func validatePositions(password: String) -> Bool {
         var count = 0
         for restriction in restrictions {
-            let index = password.index(password.startIndex, offsetBy: restriction - 1) 
+            let index = password.index(password.startIndex, offsetBy: restriction - 1)
             if password[index] == letter {
                 count += 1
             }
@@ -36,11 +36,11 @@ func parseLine(line: String.SubSequence) -> (Password, Policy) {
 }
 
 func parseInput(input: String) -> [(Password, Policy)] {
-    return input.split(separator: "\n").map(parseLine)
+    input.split(separator: "\n").map(parseLine)
 }
 
 let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
 let result = parseInput(input: input)
-                .filter { (password, policy) in policy.validatePositions(password: password) }
-                .count
+    .filter { password, policy in policy.validatePositions(password: password) }
+    .count
 print(result)

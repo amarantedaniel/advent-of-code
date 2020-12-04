@@ -1,6 +1,6 @@
 import Foundation
 
-func multiplyEntries(values: [Int]) -> Int {
+func multiplyEntries(values _: [Int]) -> Int {
     for elem1 in input {
         for elem2 in input {
             for elem3 in input {
@@ -14,7 +14,7 @@ func multiplyEntries(values: [Int]) -> Int {
 }
 
 let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
-                    .split(separator: "\n")
-                    .compactMap { Int($0) }
+    .split(separator: "\n")
+    .compactMap { Int($0) }
 
 print(multiplyEntries(values: input))

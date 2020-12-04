@@ -9,7 +9,7 @@ func calculateRequiredFuel(for mass: Int) -> Int {
 }
 
 let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
-                    .split(separator: "\n")
-                    .compactMap { Int($0) }
+    .split(separator: "\n")
+    .compactMap { Int($0) }
 
 print(input.map(calculateRequiredFuel(for:)).reduce(0, +))

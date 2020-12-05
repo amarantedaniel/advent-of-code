@@ -7,10 +7,38 @@ enum Move: Character {
     case left = "L"
 }
 
-func findSeat(moves: inout [Move]) -> Int {
+struct Seat: Comparable, CustomStringConvertible {
+    let row: Int
+    let column: Int
+
+    var seatId: Int {
+        row * 8 + column
+    }
+
+    var description: String {
+        "row: \(row), col: \(column)"
+    }
+
+    func nextSeat() -> Seat {
+        if column < 7 {
+            return Seat(row: row, column: column + 1)
+        }
+        return Seat(row: row + 1, column: 0)
+    }
+
+    static func < (lhs: Seat, rhs: Seat) -> Bool {
+        if lhs.row == rhs.row {
+            return lhs.column < rhs.column
+        }
+        return lhs.row < rhs.row
+    }
+}
+
+func findSeat(moves: [Move]) -> Seat {
+    var moves = moves
     let row = findRow(moves: &moves, min: 0, max: 127)
     let column = findColumn(moves: &moves, min: 0, max: 7)
-    return row * 8 + column
+    return Seat(row: row, column: column)
 }
 
 func findRow(moves: inout [Move], min: Int, max: Int) -> Int {
@@ -44,15 +72,17 @@ func findColumn(moves: inout [Move], min: Int, max: Int) -> Int {
 }
 
 let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
-let allMoves = input.split(separator: "\n").map { line in line.compactMap { Move(rawValue: $0) } }
+let seats = input
+    .split(separator: "\n")
+    .map { $0.compactMap { Move(rawValue: $0) } }
+    .map(findSeat(moves:))
+    .sorted()
 
-var highest = 0
-for moves in allMoves {
-    var moves = moves
-    let seatId = findSeat(moves: &moves)
-    if seatId > highest {
-        highest = seatId
+var previousSeat = seats.first!
+for seat in seats.dropFirst() {
+    let expectedNextSeat = previousSeat.nextSeat()
+    if expectedNextSeat != seat {
+        print(expectedNextSeat.seatId)
     }
+    previousSeat = seat
 }
-
-print(highest)

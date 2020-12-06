@@ -1,29 +1,19 @@
 import Foundation
 
-let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
-
-let groups = input.components(separatedBy: "\n\n")
-
-func countQuestionsWhereAnyoneSaidYes(groups: [String]) -> Int {
-    return groups
-        .map { $0.replacingOccurrences(of: "\n", with: "") }
-        .map { Set($0).count }
-        .reduce(0, +)
-}
-
-func countQuestionsWhereEveryoneSaidYes(groups: [String]) -> Int {
+func countAnswers(groups: [String], groupReducer: (inout Set<Character>, Set<Character>) -> Void) -> Int {
     return groups
         .map { $0.split(separator: "\n") }
-        .map { countQuestionsWhereEveryoneSaidYes(group: $0) }
+        .map { reduceGroup(group: $0, reducer: groupReducer) }
         .reduce(0, +)
 }
 
-func countQuestionsWhereEveryoneSaidYes(group: [String.SubSequence]) -> Int {
-    let sets = group.map { Set($0) }
-    return sets
-        .reduce(into: sets.first!) { $0.formIntersection($1) }
-        .count
+func reduceGroup(group: [String.SubSequence], reducer: (inout Set<Character>, Set<Character>) -> Void) -> Int {
+    let sets = group.map(Set.init)
+    return sets.reduce(into: sets.first!, reducer).count
 }
 
-// print(countQuestionsWhereAnyoneSaidYes(groups: groups))
-print(countQuestionsWhereEveryoneSaidYes(groups: groups))
+let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
+let groups = input.components(separatedBy: "\n\n")
+
+print(countAnswers(groups: groups) { $0.formUnion($1) })
+print(countAnswers(groups: groups) { $0.formIntersection($1) })

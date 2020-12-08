@@ -28,7 +28,7 @@ struct Policy {
     }
 }
 
-func parseLine(line: String.SubSequence) -> (Password, Policy) {
+func parseLine(line: Substring) -> (Password, Policy) {
     let elements = line.split(separator: " ")
     let restrictions = elements[0].split(separator: "-").compactMap { Int($0) }
     let letter = elements[1].first!

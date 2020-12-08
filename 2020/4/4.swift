@@ -64,7 +64,7 @@ struct Passport {
     }
 }
 
-func parsePassport(input: [String.SubSequence]) -> Passport {
+func parsePassport(input: [Substring]) -> Passport {
     let dictionary = input.reduce(into: [String: String]()) { dict, entry in
         let keyValue = entry.split(separator: ":")
         dict[String(keyValue[0])] = String(keyValue[1])

@@ -5,7 +5,7 @@ struct Parser {
         return input.split(separator: "\n").map(parseRule(input:))
     }
 
-    private func parseRule(input: String.SubSequence) -> (String, [String: Int]) {
+    private func parseRule(input: Substring) -> (String, [String: Int]) {
         let info = input.components(separatedBy: " bags contain ")
         let bag = info[0]
         let innerBags = info[1]

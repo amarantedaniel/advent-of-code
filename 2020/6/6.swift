@@ -7,7 +7,7 @@ func countAnswers(groups: [String], groupReducer: (inout Set<Character>, Set<Cha
         .reduce(0, +)
 }
 
-func reduceGroup(group: [String.SubSequence], reducer: (inout Set<Character>, Set<Character>) -> Void) -> Int {
+func reduceGroup(group: [Substring], reducer: (inout Set<Character>, Set<Character>) -> Void) -> Int {
     let sets = group.map(Set.init)
     return sets.reduce(into: sets.first!, reducer).count
 }

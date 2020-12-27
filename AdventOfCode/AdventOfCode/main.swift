@@ -1,4 +1,5 @@
 import ArgumentParser
+import Y2020D1
 
 struct AdventOfCode: ParsableCommand {
     @Option(name: .shortAndLong)
@@ -10,6 +11,7 @@ struct AdventOfCode: ParsableCommand {
     mutating func run() throws {
         print("year: \(year)")
         print("day: \(day)")
+        solve()
     }
 }
 

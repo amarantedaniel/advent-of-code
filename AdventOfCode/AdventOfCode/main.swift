@@ -1,10 +1,16 @@
-//
-//  main.swift
-//  AdventOfCode
-//
-//  Created by Daniel Amarante on 2020-12-27.
-//
+import ArgumentParser
 
-import Foundation
+struct AdventOfCode: ParsableCommand {
+    @Option(name: .shortAndLong)
+    var year: Int = 2020
 
-print("Hello, World!")
+    @Option(name: .shortAndLong)
+    var day: Int = 1
+
+    mutating func run() throws {
+        print("year: \(year)")
+        print("day: \(day)")
+    }
+}
+
+AdventOfCode.main()

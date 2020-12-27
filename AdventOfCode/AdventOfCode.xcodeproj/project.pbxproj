@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		927BA40A2598ED4B00F8A705 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 927BA4092598ED4B00F8A705 /* ArgumentParser */; };
 		92C13B692598E35000AF243A /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C13B682598E35000AF243A /* main.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				927BA40A2598ED4B00F8A705 /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,12 +74,16 @@
 				92C13B612598E35000AF243A /* Sources */,
 				92C13B622598E35000AF243A /* Frameworks */,
 				92C13B632598E35000AF243A /* CopyFiles */,
+				927BA40D2598EDA100F8A705 /* Copy Executable */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = AdventOfCode;
+			packageProductDependencies = (
+				927BA4092598ED4B00F8A705 /* ArgumentParser */,
+			);
 			productName = AdventOfCode;
 			productReference = 92C13B652598E35000AF243A /* AdventOfCode */;
 			productType = "com.apple.product-type.tool";
@@ -105,6 +111,9 @@
 				Base,
 			);
 			mainGroup = 92C13B5C2598E35000AF243A;
+			packageReferences = (
+				927BA4082598ED4B00F8A705 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
+			);
 			productRefGroup = 92C13B662598E35000AF243A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -113,6 +122,27 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		927BA40D2598EDA100F8A705 /* Copy Executable */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Executable";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp ${BUILT_PRODUCTS_DIR}/AdventOfCode ${PROJECT_DIR}/bin\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		92C13B612598E35000AF243A /* Sources */ = {
@@ -285,6 +315,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		927BA4082598ED4B00F8A705 /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-argument-parser";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		927BA4092598ED4B00F8A705 /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 927BA4082598ED4B00F8A705 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 92C13B5D2598E35000AF243A /* Project object */;
 }

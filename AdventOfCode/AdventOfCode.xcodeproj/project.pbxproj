@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		92C646EA2599092E00DA6A37 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C646E92599092E00DA6A37 /* main.swift */; };
-		92C646F925990AB800DA6A37 /* Y2020D1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92C646F825990AB800DA6A37 /* Y2020D1.framework */; };
+		92C646F925990AB800DA6A37 /* Y2020D1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92C646F825990AB800DA6A37 /* Y2020D1.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		92C646FA25990AB800DA6A37 /* Y2020D1.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92C646F825990AB800DA6A37 /* Y2020D1.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		92C646FE25990B2400DA6A37 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 92C646FD25990B2400DA6A37 /* ArgumentParser */; };
 /* End PBXBuildFile section */
@@ -99,6 +99,7 @@
 				92C646E32599092E00DA6A37 /* Frameworks */,
 				92C646E42599092E00DA6A37 /* CopyFiles */,
 				92C646FB25990AB800DA6A37 /* Embed Frameworks */,
+				92714084259A1C3100F303FC /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -146,6 +147,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		92714084259A1C3100F303FC /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "ln -sf ${BUILT_PRODUCTS_DIR}/AdventOfCode ${PROJECT_DIR}/bin/aoc\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		92C646E22599092E00DA6A37 /* Sources */ = {
@@ -280,6 +301,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = ZX7GUMJ35C;
 				ENABLE_HARDENED_RUNTIME = YES;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -291,6 +313,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = ZX7GUMJ35C;
 				ENABLE_HARDENED_RUNTIME = YES;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};

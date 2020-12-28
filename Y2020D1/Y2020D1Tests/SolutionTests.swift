@@ -1,8 +1,7 @@
 import XCTest
 @testable import Y2020D1
 
-class Y2020D1Tests: XCTestCase {
-
+class SolutionTests: XCTestCase {
     func test_solve1_withSampleInput_shouldReturn514579() {
         let path = Bundle(for: type(of: self)).path(forResource: "sample", ofType: "txt")!
         let input = try! String(contentsOfFile: path, encoding: .utf8)

@@ -10,7 +10,7 @@
 		927140742599F44E00F303FC /* sample.txt in Resources */ = {isa = PBXBuildFile; fileRef = 927140732599F44E00F303FC /* sample.txt */; };
 		9271407A2599F7A600F303FC /* large.txt in Resources */ = {isa = PBXBuildFile; fileRef = 927140792599F7A600F303FC /* large.txt */; };
 		92C646AF259908B600DA6A37 /* Y2020D1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92C646A5259908B600DA6A37 /* Y2020D1.framework */; };
-		92C646B4259908B600DA6A37 /* Y2020D1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C646B3259908B600DA6A37 /* Y2020D1Tests.swift */; };
+		92C646B4259908B600DA6A37 /* SolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C646B3259908B600DA6A37 /* SolutionTests.swift */; };
 		92C646B6259908B600DA6A37 /* Y2020D1.h in Headers */ = {isa = PBXBuildFile; fileRef = 92C646A8259908B600DA6A37 /* Y2020D1.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		92C646F42599095E00DA6A37 /* Solution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C646F32599095E00DA6A37 /* Solution.swift */; };
 /* End PBXBuildFile section */
@@ -32,7 +32,7 @@
 		92C646A8259908B600DA6A37 /* Y2020D1.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Y2020D1.h; sourceTree = "<group>"; };
 		92C646A9259908B600DA6A37 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92C646AE259908B600DA6A37 /* Y2020D1Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Y2020D1Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		92C646B3259908B600DA6A37 /* Y2020D1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Y2020D1Tests.swift; sourceTree = "<group>"; };
+		92C646B3259908B600DA6A37 /* SolutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolutionTests.swift; sourceTree = "<group>"; };
 		92C646B5259908B600DA6A37 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92C646F32599095E00DA6A37 /* Solution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Solution.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -105,7 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				927140722599F42500F303FC /* Input */,
-				92C646B3259908B600DA6A37 /* Y2020D1Tests.swift */,
+				92C646B3259908B600DA6A37 /* SolutionTests.swift */,
 				92C646B5259908B600DA6A37 /* Info.plist */,
 			);
 			path = Y2020D1Tests;
@@ -230,7 +230,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				92C646B4259908B600DA6A37 /* Y2020D1Tests.swift in Sources */,
+				92C646B4259908B600DA6A37 /* SolutionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

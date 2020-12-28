@@ -9,11 +9,11 @@ func countAnswers(groups: [Group], groupReducer: Reducer) -> Int {
 
 func reduceGroup(group: Group, reducer: Reducer) -> Int {
     let sets = group.map(Set.init)
-    return sets.reduce(into: sets.first!, reducer).count
+    return sets.reduce(into: sets[0], reducer).count
 }
 
 func parseGroups(input: String) -> [Group] {
-    return input
+    input
         .components(separatedBy: "\n\n")
         .map { $0.split(separator: "\n") }
 }

@@ -12,13 +12,11 @@ public func solve2(_ input: String) -> Int? {
         .map { navigator.findSeat(moves: $0) }
         .sorted()
 
-    var previousSeat = seats.first!
-    for seat in seats.dropFirst() {
-        let expectedNextSeat = previousSeat.nextSeat()
-        if expectedNextSeat != seat {
+    for (previous, next) in zip(seats, seats.dropFirst()) {
+        let expectedNextSeat = previous.nextSeat()
+        if expectedNextSeat != next {
             return expectedNextSeat.seatId
         }
-        previousSeat = seat
     }
     return nil
 }

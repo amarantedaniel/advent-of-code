@@ -30,6 +30,6 @@ class NavigatorTests: XCTestCase {
     }
 
     private func parse(input: String) -> [Move] {
-        return Array(input).compactMap(Move.init(rawValue:))
+        Array(input).compactMap(Move.init(rawValue:))
     }
 }

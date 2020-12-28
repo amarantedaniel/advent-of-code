@@ -1,12 +1,38 @@
-//
-//  Solution.swift
-//  Y2020D1
-//
-//  Created by Daniel Amarante on 2020-12-27.
-//
 
-import Foundation
+func find1(values: [Int], sum: Int) -> Int? {
+    for elem1 in values {
+        for elem2 in values {
+            if elem1 + elem2 == sum {
+                return elem1 * elem2
+            }
+        }
+    }
+    return nil
+}
 
-public func solve() {
-    print("success")
+func find2(values: [Int], sum: Int) -> Int? {
+    for elem1 in values {
+        for elem2 in values {
+            for elem3 in values {
+                if elem1 + elem2 + elem3 == sum {
+                    return elem1 * elem2 * elem3
+                }
+            }
+        }
+    }
+    return nil
+}
+
+func parse(input: String) -> [Int] {
+    return input
+        .split(separator: "\n")
+        .compactMap { Int($0) }
+}
+
+public func solve1(_ input: String) -> Int? {
+    return find1(values: parse(input: input), sum: 2020)
+}
+
+public func solve2(_ input: String) -> Int? {
+    return find2(values: parse(input: input), sum: 2020)
 }

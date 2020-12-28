@@ -11,7 +11,7 @@ struct AdventOfCode: ParsableCommand {
     mutating func run() throws {
         print("year: \(year)")
         print("day: \(day)")
-        solve()
+//        solve1()
     }
 }
 

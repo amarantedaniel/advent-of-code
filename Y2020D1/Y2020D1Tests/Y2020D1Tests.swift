@@ -1,33 +1,30 @@
-//
-//  Y2020D1Tests.swift
-//  Y2020D1Tests
-//
-//  Created by Daniel Amarante on 2020-12-27.
-//
-
 import XCTest
 @testable import Y2020D1
 
 class Y2020D1Tests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    func test_solve1_withSampleInput_shouldReturn514579() {
+        let path = Bundle(for: type(of: self)).path(forResource: "sample", ofType: "txt")!
+        let input = try! String(contentsOfFile: path, encoding: .utf8)
+        XCTAssertEqual(solve1(input), 514579)
+
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func test_solve1_withLargeInput_shouldReturn646779() {
+        let path = Bundle(for: type(of: self)).path(forResource: "large", ofType: "txt")!
+        let input = try! String(contentsOfFile: path, encoding: .utf8)
+        XCTAssertEqual(solve1(input), 646779)
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func test_solve2_withSampleInput_shouldReturn241861950() {
+        let path = Bundle(for: type(of: self)).path(forResource: "sample", ofType: "txt")!
+        let input = try! String(contentsOfFile: path, encoding: .utf8)
+        XCTAssertEqual(solve2(input), 241861950)
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    func test_solve2_withLargeInput_shouldReturn246191688() {
+        let path = Bundle(for: type(of: self)).path(forResource: "large", ofType: "txt")!
+        let input = try! String(contentsOfFile: path, encoding: .utf8)
+        XCTAssertEqual(solve2(input), 246191688)
     }
-
 }

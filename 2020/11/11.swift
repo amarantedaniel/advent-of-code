@@ -73,7 +73,7 @@ struct Layout: Equatable {
     }
 
     func occupiedSeatCount() -> Int {
-        return seats.flatMap { $0 }.filter(\.isOccupied).count
+        seats.flatMap { $0 }.filter(\.isOccupied).count
     }
 }
 

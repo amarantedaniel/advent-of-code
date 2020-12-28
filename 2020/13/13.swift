@@ -24,7 +24,7 @@ func applyChineseRemainderTheorem(values: [(value: Int, mod: Int)]) -> Int {
 }
 
 func normalizeProblem(times: [Int?]) -> [(value: Int, mod: Int)] {
-    return times.enumerated().compactMap { index, bus in
+    times.enumerated().compactMap { index, bus in
         guard let bus = bus else { return nil }
         return (value: bus - index, mod: bus)
     }

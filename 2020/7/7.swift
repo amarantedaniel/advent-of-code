@@ -2,7 +2,7 @@ import Foundation
 
 struct Parser {
     func parse(input: String) -> [(String, [String: Int])] {
-        return input.split(separator: "\n").map(parseRule(input:))
+        input.split(separator: "\n").map(parseRule(input:))
     }
 
     private func parseRule(input: Substring) -> (String, [String: Int]) {
@@ -74,7 +74,7 @@ class Bag {
     }
 
     func countInnerBags() -> Int {
-        return countBags() - 1
+        countBags() - 1
     }
 
     private func countBags() -> Int {

@@ -12,11 +12,11 @@ struct Parser {
     }
 
     private func parseRules(input: String) -> [Rule] {
-        return input.split(separator: "\n").map(Rule.init(input:))
+        input.split(separator: "\n").map(Rule.init(input:))
     }
 
     private func parseTicket(input: String) -> Ticket {
-        return input
+        input
             .split(separator: "\n")
             .dropFirst()
             .map { $0.split(separator: ",").compactMap { Int($0) }}
@@ -24,7 +24,7 @@ struct Parser {
     }
 
     private func parseNearbyTickets(input: String) -> [Ticket] {
-        return input
+        input
             .split(separator: "\n")
             .dropFirst()
             .map { $0.split(separator: ",").compactMap { Int($0) } }
@@ -42,7 +42,7 @@ struct Range {
     }
 
     func contains(number: Int) -> Bool {
-        return number >= from && number <= to
+        number >= from && number <= to
     }
 }
 
@@ -58,7 +58,7 @@ struct Rule {
     }
 
     func isValid(value: Int) -> Bool {
-        return ranges.contains { $0.contains(number: value) }
+        ranges.contains { $0.contains(number: value) }
     }
 }
 
@@ -80,7 +80,7 @@ func validIndexesForRule(rule: Rule, tickets: [Ticket]) -> [Int] {
 }
 
 func isValid(ticket: Ticket, rules: [Rule]) -> Bool {
-    let ranges = rules.flatMap { $0.ranges }
+    let ranges = rules.flatMap(\.ranges)
     return ticket.allSatisfy { number in
         ranges.contains { range in range.contains(number: number) }
     }
@@ -105,7 +105,7 @@ while completed.count != rules.count {
 
 let result = rules
     .filter { $0.name.hasPrefix("departure") }
-    .flatMap { $0.validIndexes }
+    .flatMap(\.validIndexes)
     .map { ticket[$0] }
     .reduce(1, *)
 

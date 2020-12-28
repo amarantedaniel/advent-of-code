@@ -1,7 +1,7 @@
 import Foundation
 
 func countAnswers(groups: [String], groupReducer: (inout Set<Character>, Set<Character>) -> Void) -> Int {
-    return groups
+    groups
         .map { $0.split(separator: "\n") }
         .map { reduceGroup(group: $0, reducer: groupReducer) }
         .reduce(0, +)

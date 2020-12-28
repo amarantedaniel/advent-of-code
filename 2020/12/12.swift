@@ -72,11 +72,11 @@ struct Ship {
         case west
 
         func turnRight(degrees: Int) -> Direction {
-            return turn(degrees: degrees, allCases: Direction.allCases)
+            turn(degrees: degrees, allCases: Direction.allCases)
         }
 
         func turnLeft(degrees: Int) -> Direction {
-            return turn(degrees: degrees, allCases: Array(Direction.allCases.reversed()))
+            turn(degrees: degrees, allCases: Array(Direction.allCases.reversed()))
         }
 
         private func turn(degrees: Int, allCases: [Direction]) -> Direction {

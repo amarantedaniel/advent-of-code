@@ -24,15 +24,15 @@ func find2(values: [Int], sum: Int) -> Int? {
 }
 
 func parse(input: String) -> [Int] {
-    return input
+    input
         .split(separator: "\n")
         .compactMap { Int($0) }
 }
 
 public func solve1(_ input: String) -> Int? {
-    return find1(values: parse(input: input), sum: 2020)
+    find1(values: parse(input: input), sum: 2020)
 }
 
 public func solve2(_ input: String) -> Int? {
-    return find2(values: parse(input: input), sum: 2020)
+    find2(values: parse(input: input), sum: 2020)
 }

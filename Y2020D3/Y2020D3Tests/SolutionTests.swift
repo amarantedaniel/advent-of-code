@@ -23,6 +23,6 @@ class SolutionTests: XCTestCase {
     func test_solve2_withLargeInput_shouldReturn9406609920() {
         let path = Bundle(for: type(of: self)).path(forResource: "large", ofType: "txt")!
         let input = try! String(contentsOfFile: path, encoding: .utf8)
-        XCTAssertEqual(solve2(input), 9406609920)
+        XCTAssertEqual(solve2(input), 9_406_609_920)
     }
 }

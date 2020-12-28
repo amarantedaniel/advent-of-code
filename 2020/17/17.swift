@@ -45,7 +45,7 @@ struct Cube: CustomStringConvertible, Comparable {
     }
 
     static func < (lhs: Cube, rhs: Cube) -> Bool {
-        return lhs.position < rhs.position
+        lhs.position < rhs.position
     }
 }
 

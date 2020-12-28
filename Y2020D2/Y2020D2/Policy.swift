@@ -1,5 +1,3 @@
-import Foundation
-
 typealias Password = String
 
 struct Policy {
@@ -27,20 +25,3 @@ struct Policy {
         return count == 1
     }
 }
-
-func parseLine(line: Substring) -> (Password, Policy) {
-    let elements = line.split(separator: " ")
-    let restrictions = elements[0].split(separator: "-").compactMap { Int($0) }
-    let letter = elements[1].first!
-    return (String(elements[2]), Policy(letter: letter, restrictions: restrictions))
-}
-
-func parseInput(input: String) -> [(Password, Policy)] {
-    input.split(separator: "\n").map(parseLine)
-}
-
-let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
-let result = parseInput(input: input)
-    .filter { password, policy in policy.validatePositions(password: password) }
-    .count
-print(result)

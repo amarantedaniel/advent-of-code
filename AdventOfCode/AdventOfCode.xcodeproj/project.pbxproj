@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		927140AE259A24FA00F303FC /* Y2020D2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 927140AD259A24FA00F303FC /* Y2020D2.framework */; };
+		927140AF259A24FA00F303FC /* Y2020D2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 927140AD259A24FA00F303FC /* Y2020D2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		92C646EA2599092E00DA6A37 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C646E92599092E00DA6A37 /* main.swift */; };
 		92C646F925990AB800DA6A37 /* Y2020D1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92C646F825990AB800DA6A37 /* Y2020D1.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		92C646FA25990AB800DA6A37 /* Y2020D1.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92C646F825990AB800DA6A37 /* Y2020D1.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -29,6 +31,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				927140AF259A24FA00F303FC /* Y2020D2.framework in Embed Frameworks */,
 				92C646FA25990AB800DA6A37 /* Y2020D1.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -37,6 +40,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		927140AD259A24FA00F303FC /* Y2020D2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Y2020D2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		92C646E62599092E00DA6A37 /* AdventOfCode */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AdventOfCode; sourceTree = BUILT_PRODUCTS_DIR; };
 		92C646E92599092E00DA6A37 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		92C646F825990AB800DA6A37 /* Y2020D1.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Y2020D1.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -47,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				927140AE259A24FA00F303FC /* Y2020D2.framework in Frameworks */,
 				92C646FE25990B2400DA6A37 /* ArgumentParser in Frameworks */,
 				92C646F925990AB800DA6A37 /* Y2020D1.framework in Frameworks */,
 			);
@@ -83,6 +88,7 @@
 		92C646F725990AB800DA6A37 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				927140AD259A24FA00F303FC /* Y2020D2.framework */,
 				92C646F825990AB800DA6A37 /* Y2020D1.framework */,
 			);
 			name = Frameworks;

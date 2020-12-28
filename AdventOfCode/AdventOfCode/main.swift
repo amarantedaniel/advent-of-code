@@ -1,6 +1,7 @@
 import Foundation
 import ArgumentParser
 import Y2020D1
+import Y2020D2
 
 struct AdventOfCode: ParsableCommand {
     @Argument var inputFile: String
@@ -26,6 +27,10 @@ struct AdventOfCode: ParsableCommand {
             print(Y2020D1.solve1(input) ?? "")
         case (2020, 1, 2):
             print(Y2020D1.solve2(input) ?? "")
+        case (2020, 2, 1):
+            print(Y2020D2.solve1(input))
+        case (2020, 2, 2):
+            print(Y2020D2.solve2(input))
         default:
             print("Solution unavailable")
         }

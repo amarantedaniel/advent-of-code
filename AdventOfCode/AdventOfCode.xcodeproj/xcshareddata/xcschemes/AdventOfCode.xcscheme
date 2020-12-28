@@ -58,6 +58,26 @@
                ReferencedContainer = "container:../Y2020D3/Y2020D3.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "92714168259A341900F303FC"
+               BuildableName = "Y2020D4Tests.xctest"
+               BlueprintName = "Y2020D4Tests"
+               ReferencedContainer = "container:../Y2020D4/Y2020D4.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "92714142259A340300F303FC"
+               BuildableName = "Y2020D5Tests.xctest"
+               BlueprintName = "Y2020D5Tests"
+               ReferencedContainer = "container:../Y2020D5/Y2020D5.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

@@ -31,6 +31,18 @@
       <FileRef
          location = "group:Y2020D9/Y2020D9.xcodeproj">
       </FileRef>
+      <FileRef
+         location = "group:Y2020D10/Y2020D10.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Y2020D11/Y2020D11.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Y2020D12/Y2020D12.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Y2020D13/Y2020D13.xcodeproj">
+      </FileRef>
    </Group>
    <FileRef
       location = "group:AdventOfCode/AdventOfCode.xcodeproj">

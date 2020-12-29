@@ -1,26 +1,10 @@
-enum Parser {
-    static func parse(input: String) -> Set<Position> {
-        let matrix = input.split(separator: "\n").map { Array($0) }
-        var cubes: Set<Position> = []
-
-        for i in 0 ..< matrix.count {
-            for j in 0 ..< matrix[i].count {
-                if matrix[i][j] == "#" {
-                    cubes.insert(Position(x: j, y: i, z: 0))
-                }
-            }
-        }
-        return cubes
-    }
-}
-
-func run(positions: Set<Position>) -> Set<Position> {
-    var newPositions: Set<Position> = []
+func run<P: Position & Hashable>(positions: Set<P>) -> Set<P>  {
+    var newPositions: Set<P> = []
     for position in positions {
         let adjacents = position.adjacents()
         let activeAdjacents = positions.intersection(adjacents)
         let inactiveAdjacents = Set(adjacents).subtracting(positions)
-        if 2...3 ~= activeAdjacents.count {
+        if 2 ... 3 ~= activeAdjacents.count {
             newPositions.insert(position)
         }
         for adjacent in inactiveAdjacents {
@@ -35,14 +19,24 @@ func run(positions: Set<Position>) -> Set<Position> {
     return newPositions
 }
 
-public func solve1(_ input: String) -> Int {
-    let positions = Parser.parse(input: input)
-    let first = run(positions: positions)
-    let second = run(positions: first)
-    let third = run(positions: second)
-    let fourth = run(positions: third)
-    let fifth = run(positions: fourth)
-    let sixth = run(positions: fifth)
+func run<P: Position & Hashable>(positions: Set<P>, iterations: Int) -> Set<P> {
+    var positions = positions
+    for _ in 0 ..< iterations {
+        positions = run(positions: positions)
+    }
+    return positions
+}
 
-    return sixth.count
+public func solve1(_ input: String) -> Int {
+    let positions = Parser.parse(input: input) { (x, y) in
+        Position3D(x: x, y: y, z: 0)
+    }
+    return run(positions: positions, iterations: 6).count
+}
+
+public func solve2(_ input: String) -> Int {
+    let positions = Parser.parse(input: input) { (x, y) in
+        Position4D(x: x, y: y, z: 0, w: 0)
+    }
+    return run(positions: positions, iterations: 6).count
 }

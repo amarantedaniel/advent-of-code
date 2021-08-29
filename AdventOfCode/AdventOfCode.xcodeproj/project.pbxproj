@@ -105,7 +105,6 @@
 				92C646E32599092E00DA6A37 /* Frameworks */,
 				92C646E42599092E00DA6A37 /* CopyFiles */,
 				92C646FB25990AB800DA6A37 /* Embed Frameworks */,
-				92714084259A1C3100F303FC /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -153,26 +152,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		92714084259A1C3100F303FC /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "ln -sf ${BUILT_PRODUCTS_DIR}/AdventOfCode ${PROJECT_DIR}/bin/aoc\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		92C646E22599092E00DA6A37 /* Sources */ = {

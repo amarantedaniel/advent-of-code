@@ -5,58 +5,58 @@
       location = "container:"
       name = "2020">
       <FileRef
-         location = "group:Y2020D1/Y2020D1.xcodeproj">
+         location = "group:2020/Y2020D1/Y2020D1.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D2/Y2020D2.xcodeproj">
+         location = "group:2020/Y2020D2/Y2020D2.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D3/Y2020D3.xcodeproj">
+         location = "group:2020/Y2020D3/Y2020D3.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D4/Y2020D4.xcodeproj">
+         location = "group:2020/Y2020D4/Y2020D4.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D5/Y2020D5.xcodeproj">
+         location = "group:2020/Y2020D5/Y2020D5.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D6/Y2020D6.xcodeproj">
+         location = "group:2020/Y2020D6/Y2020D6.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D7/Y2020D7.xcodeproj">
+         location = "group:2020/Y2020D7/Y2020D7.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D8/Y2020D8.xcodeproj">
+         location = "group:2020/Y2020D8/Y2020D8.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D9/Y2020D9.xcodeproj">
+         location = "group:2020/Y2020D9/Y2020D9.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D10/Y2020D10.xcodeproj">
+         location = "group:2020/Y2020D10/Y2020D10.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D11/Y2020D11.xcodeproj">
+         location = "group:2020/Y2020D11/Y2020D11.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D12/Y2020D12.xcodeproj">
+         location = "group:2020/Y2020D12/Y2020D12.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D13/Y2020D13.xcodeproj">
+         location = "group:2020/Y2020D13/Y2020D13.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D14/Y2020D14.xcodeproj">
+         location = "group:2020/Y2020D14/Y2020D14.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D15/Y2020D15.xcodeproj">
+         location = "group:2020/Y2020D15/Y2020D15.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D16/Y2020D16.xcodeproj">
+         location = "group:2020/Y2020D16/Y2020D16.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D17/Y2020D17.xcodeproj">
+         location = "group:2020/Y2020D17/Y2020D17.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Y2020D18/Y2020D18.xcodeproj">
+         location = "group:2020/Y2020D18/Y2020D18.xcodeproj">
       </FileRef>
    </Group>
    <FileRef

@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Workspace
    version = "1.0">
-   <FileRef
-      location = "group:Y2020D18/Y2020D18.xcodeproj">
-   </FileRef>
    <Group
       location = "container:"
       name = "2020">
@@ -57,6 +54,9 @@
       </FileRef>
       <FileRef
          location = "group:Y2020D17/Y2020D17.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Y2020D18/Y2020D18.xcodeproj">
       </FileRef>
    </Group>
    <FileRef

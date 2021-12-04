@@ -9,6 +9,9 @@ enum Direction {
 struct Position {
     var x: Int
     var y: Int
+    var aim: Int
+
+    static let zero = Position(x: 0, y: 0, aim: 0)
 }
 
 struct Parser {
@@ -33,8 +36,8 @@ struct Parser {
     }
 }
 
-func process(directions: [Direction]) -> Position {
-    return directions.reduce(into: Position(x: 0, y: 0)) { position, direction in
+func processPartOne(directions: [Direction]) -> Position {
+    return directions.reduce(into: .zero) { position, direction in
         switch direction {
         case .forward(let value):
             position.x += value
@@ -46,9 +49,23 @@ func process(directions: [Direction]) -> Position {
     }
 }
 
+func processPartTwo(directions: [Direction]) -> Position {
+    return directions.reduce(into: .zero) { position, direction in
+        switch direction {
+        case .forward(let value):
+            position.x += value
+            position.y += position.aim * value
+        case .up(let value):
+            position.aim -= value
+        case .down(let value):
+            position.aim += value
+        }
+    }
+}
+
 let parser = Parser()
 let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
 let directions = parser.parseDirections(from: input)
-let finalPosition = process(directions: directions)
+let finalPosition = processPartTwo(directions: directions)
 
 print(finalPosition.x * finalPosition.y)

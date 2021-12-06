@@ -1,44 +1,40 @@
 import Foundation
 
-struct Point {
-    let x: Int
-    let y: Int
+struct Point: Equatable, CustomStringConvertible {
+    var x: Int
+    var y: Int
+
+    var description: String { return "(\(x), \(y))" }
 }
 
 struct Grid: CustomStringConvertible {
     var matrix: [[Int]] = Array(repeating: Array(repeating: 0, count: 1000), count: 1000)
 
     mutating func addLine(from: Point, to: Point) {
-        if from.x == to.x {
-            drawVerticalLine(x: from.x, from: from.y, to: to.y)
-        } else if from.y == to.y {
-            drawHorizontalLine(y: from.y, from: from.x, to: to.x)
+        var current = from
+        while current != to {
+            matrix[current.y][current.x] += 1
+            if to.y < current.y {
+                current.y -= 1
+            }
+            if to.y > current.y {
+                current.y += 1
+            }
+            if to.x < current.x {
+                current.x -= 1
+            }
+            if to.x > current.x {
+                current.x += 1
+            }
         }
-    }
-
-    private mutating func drawVerticalLine(x: Int, from: Int, to: Int) {
-        let sorted = [from, to].sorted()
-        let range = sorted[0]...sorted[1]
-        for y in range {
-            matrix[y][x] += 1
-        }
-    }
-
-    private mutating func drawHorizontalLine(y: Int, from: Int, to: Int) {
-        let sorted = [from, to].sorted()
-        let range = sorted[0]...sorted[1]
-        for x in range {
-            matrix[y][x] += 1
-        }
+        matrix[current.y][current.x] += 1
     }
 
     func calculateResult() -> Int {
         var count = 0
-        for y in 0..<matrix.count {
-            for x in 0..<matrix[y].count {
-                if matrix[y][x] > 1 {
-                    count += 1
-                }
+        for row in matrix {
+            for point in row where point > 1 {
+                count += 1
             }
         }
         return count
@@ -46,9 +42,9 @@ struct Grid: CustomStringConvertible {
 
     var description: String {
         var text = ""
-        for y in 0..<matrix.count {
-            for x in 0..<matrix[y].count {
-                text += matrix[y][x].description
+        for row in matrix {
+            for point in row {
+                text += point.description
             }
             text += "\n"
         }
@@ -69,5 +65,4 @@ for line in input {
 
     grid.addLine(from: points[0], to: points[1])
 }
-
 print(grid.calculateResult())

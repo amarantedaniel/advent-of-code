@@ -5,6 +5,8 @@ struct Board: CustomStringConvertible {
     var rows: [Set<Int>] = []
     var columns: [Set<Int>] = []
 
+    var isFinished = false
+
     init(numbers: [[Int]]) {
         self.numbers = numbers
         setupRows()
@@ -28,10 +30,12 @@ struct Board: CustomStringConvertible {
     }
 
     mutating func process(number: Int) -> Bool {
-        return processRow(number: number) || processColumn(number: number)
+        let hasSuccessInRows =  processRows(number: number)
+        let hasSuccessInColumns = processColumns(number: number)
+        return hasSuccessInRows || hasSuccessInColumns
     }
 
-    private mutating func processRow(number: Int) -> Bool {
+    private mutating func processRows(number: Int) -> Bool {
         for i in 0..<rows.count {
             rows[i].remove(number)
             if rows[i].isEmpty {
@@ -41,7 +45,7 @@ struct Board: CustomStringConvertible {
         return false
     }
 
-    private mutating func processColumn(number: Int) -> Bool {
+    private mutating func processColumns(number: Int) -> Bool {
         for i in 0..<columns.count {
             columns[i].remove(number)
             if columns[i].isEmpty {
@@ -59,7 +63,7 @@ struct Board: CustomStringConvertible {
         for column in columns {
             bigSet.formUnion(column)
         }
-        return (bigSet.reduce(0, +) - number) * number
+        return bigSet.reduce(0, +) * number
     }
 
     var description: String {
@@ -86,7 +90,7 @@ let input = try! String(contentsOfFile: "input.txt", encoding: .utf8).split(sepa
 let numbers = input[0].split(separator: ",").compactMap { Int($0) }
 var boards = parseBoards(input: input)
 
-func play(numbers: [Int], boards: inout [Board]) -> Int {
+func findWinningBoardResult(numbers: [Int], boards: inout [Board]) -> Int {
     for number in numbers {
         for i in 0..<boards.count {
             let result = boards[i].process(number: number)
@@ -98,4 +102,21 @@ func play(numbers: [Int], boards: inout [Board]) -> Int {
     fatalError()
 }
 
-print(play(numbers: numbers, boards: &boards))
+func findLosingBoardResult(numbers: [Int], boards: inout [Board]) -> Int {
+    for number in numbers {
+        for i in 0..<boards.count where boards[i].isFinished == false {
+            let count = boards.filter { !$0.isFinished }.count
+            let result = boards[i].process(number: number)
+            if result {
+                boards[i].isFinished = true
+                if count == 1 {
+                    return boards[i].calculateResult(number: number)
+                }
+            }
+        }
+    }
+    fatalError()
+}
+
+print(findWinningBoardResult(numbers: numbers, boards: &boards))
+print(findLosingBoardResult(numbers: numbers, boards: &boards))

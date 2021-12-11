@@ -53,7 +53,11 @@ for signal in signals {
     let five = patterns.popFirst()!
     lookup[five] = 5
 
-    sum += Int(outputs.compactMap { lookup[$0]?.description }.joined())!
+    sum += outputs
+        .compactMap { lookup[$0] }
+        .reduce(0) { result, number in
+            (result * 10) + number
+        }
 }
 
 print(sum)

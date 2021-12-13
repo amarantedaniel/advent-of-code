@@ -15,6 +15,7 @@ let package = Package(
         .library(name: "Y2021D7", targets: ["Y2021D7"]),
         .library(name: "Y2021D8", targets: ["Y2021D8"]),
         .library(name: "Y2021D9", targets: ["Y2021D9"]),
+        .library(name: "Y2021D10", targets: ["Y2021D10"]),
     ],
     dependencies: [],
     targets: [
@@ -27,6 +28,7 @@ let package = Package(
         .target(name: "Y2021D7", dependencies: []),
         .target(name: "Y2021D8", dependencies: []),
         .target(name: "Y2021D9", dependencies: []),
+        .target(name: "Y2021D10", dependencies: []),
         .testTarget(name: "Y2021D1Tests", dependencies: ["Y2021D1"], resources: [.process("Input")]),
         .testTarget(name: "Y2021D2Tests", dependencies: ["Y2021D2"], resources: [.process("Input")]),
         .testTarget(name: "Y2021D3Tests", dependencies: ["Y2021D3"], resources: [.process("Input")]),
@@ -36,4 +38,5 @@ let package = Package(
         .testTarget(name: "Y2021D7Tests", dependencies: ["Y2021D7"], resources: [.process("Input")]),
         .testTarget(name: "Y2021D8Tests", dependencies: ["Y2021D8"], resources: [.process("Input")]),
         .testTarget(name: "Y2021D9Tests", dependencies: ["Y2021D9"], resources: [.process("Input")]),
+        .testTarget(name: "Y2021D10Tests", dependencies: ["Y2021D10"], resources: [.process("Input")]),
     ])

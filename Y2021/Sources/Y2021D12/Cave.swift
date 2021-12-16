@@ -2,45 +2,27 @@ import Foundation
 
 class Cave {
     let identifier: String
-    let variant: Variant
+    let type: CaveType
 
     var neighboors: Set<Cave> = []
     var visited = false
 
     init(identifier: String) {
         self.identifier = identifier
-        self.variant = Variant(identifier: identifier)
-        if case .start = variant {
+        self.type = CaveType(identifier: identifier)
+        if case .start = type {
             visited = true
         }
     }
 
     func visit() {
-        if case .small = variant {
+        if case .small = type {
             visited = true
         }
     }
-}
 
-extension Cave {
-    enum Variant {
-        case start
-        case end
-        case large
-        case small
-
-        init(identifier: String) {
-            switch identifier {
-            case "start":
-                self = .start
-            case "end":
-                self = .end
-            case _ where identifier.isLowercase:
-                self = .small
-            default:
-                self = .large
-            }
-        }
+    func unvisit() {
+        visited = false
     }
 }
 

@@ -1,5 +1,5 @@
 import XCTest
-@testable import Y2021D4
+@testable import Y2021D04
 
 class SolutionTests: XCTestCase {
     func test_solve1_withLargeInput() {

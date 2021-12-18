@@ -1,5 +1,5 @@
 import XCTest
-@testable import Y2020D5
+@testable import Y2020D05
 
 class NavigatorTests: XCTestCase {
     func test_withSampleInputBFFFBBFRRR_shouldReturnCorrectSeat() {

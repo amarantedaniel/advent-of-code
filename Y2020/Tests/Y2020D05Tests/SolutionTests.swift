@@ -1,5 +1,5 @@
 import XCTest
-@testable import Y2020D5
+@testable import Y2020D05
 
 class SolutionTests: XCTestCase {
     func test_solve1_withLargeInput_shouldReturn826() {

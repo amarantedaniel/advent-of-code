@@ -1,5 +1,5 @@
 import XCTest
-@testable import Y2020D4
+@testable import Y2020D04
 
 class SolutionTests: XCTestCase {
     func test_solve1_withSampleInput_shouldReturn2() {

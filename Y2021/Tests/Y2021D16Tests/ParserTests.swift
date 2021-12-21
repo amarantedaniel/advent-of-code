@@ -19,19 +19,15 @@ class ParserTests: XCTestCase {
         let (packet, size) = Parser.parse(input: "38006F45291200")
         XCTAssertEqual(packet.version, 1)
         XCTAssertEqual(size, 49)
-        guard case let .operator(subpackets) = packet.id else {
-            XCTFail()
-            return
-        }
-        XCTAssertEqual(subpackets[0].version, 6)
-        switch subpackets[0].id {
+        XCTAssertEqual(packet.subpackets![0].version, 6)
+        switch packet.subpackets![0].id {
         case let .literal(number):
             XCTAssertEqual(number, 10)
         default:
             XCTFail()
         }
-        XCTAssertEqual(subpackets[1].version, 2)
-        switch subpackets[1].id {
+        XCTAssertEqual(packet.subpackets![1].version, 2)
+        switch packet.subpackets![1].id {
         case let .literal(number):
             XCTAssertEqual(number, 20)
         default:
@@ -43,26 +39,22 @@ class ParserTests: XCTestCase {
         let (packet, size) = Parser.parse(input: "EE00D40C823060")
         XCTAssertEqual(packet.version, 7)
         XCTAssertEqual(size, 51)
-        guard case let .operator(subpackets) = packet.id else {
-            XCTFail()
-            return
-        }
-        XCTAssertEqual(subpackets[0].version, 2)
-        switch subpackets[0].id {
+        XCTAssertEqual(packet.subpackets![0].version, 2)
+        switch packet.subpackets![0].id {
         case let .literal(number):
             XCTAssertEqual(number, 1)
         default:
             XCTFail()
         }
-        XCTAssertEqual(subpackets[1].version, 4)
-        switch subpackets[1].id {
+        XCTAssertEqual(packet.subpackets![1].version, 4)
+        switch packet.subpackets![1].id {
         case let .literal(number):
             XCTAssertEqual(number, 2)
         default:
             XCTFail()
         }
-        XCTAssertEqual(subpackets[2].version, 1)
-        switch subpackets[2].id {
+        XCTAssertEqual(packet.subpackets![2].version, 1)
+        switch packet.subpackets![2].id {
         case let .literal(number):
             XCTAssertEqual(number, 3)
         default:

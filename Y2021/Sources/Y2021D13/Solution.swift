@@ -28,7 +28,7 @@ func stringify(points: [Point]) -> String {
     let maxX = points.map(\.x).max()!
     let set = Set(points)
     return (0...maxY).map { y in
-        (0...maxX).reduce("") { line, x in line + (set.contains(Point(x: x, y: y)) ? "#" : ".") }
+        (0...maxX).reduce("") { line, x in line + (set.contains(Point(x: x, y: y)) ? "█" : " ") }
     }.joined(separator: "\n")
 }
 

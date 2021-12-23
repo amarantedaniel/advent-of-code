@@ -1,5 +1,7 @@
 import Foundation
 
+typealias Exploded = (left: Int?, right: Int?)
+
 struct Tree: Equatable, CustomStringConvertible {
     let left: Node
     let right: Node
@@ -28,15 +30,6 @@ indirect enum Node: Equatable, CustomStringConvertible {
             return number.description
         case .tree(let tree):
             return tree.description
-        }
-    }
-
-    var leafValue: Int {
-        switch self {
-        case .leaf(let value):
-            return value
-        case .tree:
-            fatalError()
         }
     }
 }
@@ -76,8 +69,6 @@ func explode(tree: Tree, level: Int) -> (Tree, Exploded?) {
     }
     return (Tree(left: left, right: right), nil)
 }
-
-typealias Exploded = (left: Int?, right: Int?)
 
 private func explode(node: Node, level: Int) -> (Node, Exploded?) {
     switch node {
@@ -152,13 +143,11 @@ func reduce(tree: Tree) -> Tree {
     }
 }
 
- func processList(trees: [Tree]) -> Tree {
-     trees.reduce(trees[0]) { tree1, tree2 in
-         let sum = addTrees(lhs: tree1, rhs: tree2)
-         let reduced = reduce(tree: sum)
-         return reduced
-     }
- }
+func processList(trees: [Tree]) -> Tree {
+    trees.reduce(trees[0]) {
+        reduce(tree: addTrees(lhs: $0, rhs: $1))
+    }
+}
 
 func calculateMagnitude(tree: Tree) -> Int {
     switch (tree.left, tree.right) {
@@ -173,7 +162,6 @@ func calculateMagnitude(tree: Tree) -> Int {
     }
 }
 
-
 func solve1(input: String) -> Int {
     let trees = Parser.parse(input: input)
     let reduced = processList(trees: trees)
@@ -184,28 +172,10 @@ func solve2(input: String) -> Int {
     let trees = Parser.parse(input: input)
     var maximum = 0
     for i in 0..<trees.count {
-        for j in 0..<trees.count {
-            if i != j {
-                let magni1 = calculateMagnitude(tree: reduce(tree: addTrees(lhs: trees[j], rhs: trees[i])))
-                if magni1 > maximum {
-//                    print("setting maximum:")
-//                    print(trees[i])
-//                    print(trees[j])
-//                    print("value: \(magni1)")
-//                    print("")
-                    maximum = magni1
-                }
-                let magni2 = calculateMagnitude(tree: reduce(tree: addTrees(lhs: trees[j], rhs: trees[i])))
-                if magni2 > maximum {
-//                    print("setting maximum:")
-//                    print(trees[i])
-//                    print(trees[j])
-//                    print("value: \(magni2)")
-//                    print("")
-                    maximum = magni2
-                }
-//                maximum = max(max(maximum, magni1), magni2)
-            }
+        for j in 0..<trees.count where i != j {
+            let magni1 = calculateMagnitude(tree: reduce(tree: addTrees(lhs: trees[j], rhs: trees[i])))
+            let magni2 = calculateMagnitude(tree: reduce(tree: addTrees(lhs: trees[j], rhs: trees[i])))
+            maximum = max(max(maximum, magni1), magni2)
         }
     }
     return maximum

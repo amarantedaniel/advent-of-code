@@ -186,9 +186,25 @@ func solve2(input: String) -> Int {
     for i in 0..<trees.count {
         for j in 0..<trees.count {
             if i != j {
-                let magni1 =  calculateMagnitude(tree: processList(trees: [trees[i], trees[j]]))
-                let magni2 = calculateMagnitude(tree: processList(trees: [trees[j], trees[i]]))
-                maximum = max(max(maximum, magni1), magni2)
+                let magni1 = calculateMagnitude(tree: reduce(tree: addTrees(lhs: trees[j], rhs: trees[i])))
+                if magni1 > maximum {
+//                    print("setting maximum:")
+//                    print(trees[i])
+//                    print(trees[j])
+//                    print("value: \(magni1)")
+//                    print("")
+                    maximum = magni1
+                }
+                let magni2 = calculateMagnitude(tree: reduce(tree: addTrees(lhs: trees[j], rhs: trees[i])))
+                if magni2 > maximum {
+//                    print("setting maximum:")
+//                    print(trees[i])
+//                    print(trees[j])
+//                    print("value: \(magni2)")
+//                    print("")
+                    maximum = magni2
+                }
+//                maximum = max(max(maximum, magni1), magni2)
             }
         }
     }

@@ -49,7 +49,7 @@ class SolutionTests: XCTestCase {
     }
 
     func testProcessList() {
-        let path = Bundle.module.path(forResource: "sample", ofType: "txt")!
+        let path = Bundle.module.path(forResource: "sample1", ofType: "txt")!
         let input = try! String(contentsOfFile: path, encoding: .utf8)
         let trees = Parser.parse(input: input)
         XCTAssertEqual(processList(trees: trees).description, "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
@@ -69,16 +69,16 @@ class SolutionTests: XCTestCase {
         let input = try! String(contentsOfFile: path, encoding: .utf8)
         XCTAssertEqual(solve1(input: input), 3216)
     }
-//
-//    func test_solve2_withSampleInput() {
-//        let path = Bundle.module.path(forResource: "sample", ofType: "txt")!
-//        let input = try! String(contentsOfFile: path, encoding: .utf8)
-//        XCTAssertEqual(solve2(input: input), 112)
-//    }
-//
+
+    func test_solve2_withSampleInput() {
+        let path = Bundle.module.path(forResource: "sample2", ofType: "txt")!
+        let input = try! String(contentsOfFile: path, encoding: .utf8)
+        XCTAssertEqual(solve2(input: input), 3993)
+    }
+
     func test_solve2_withLargeInput() {
         let path = Bundle.module.path(forResource: "large", ofType: "txt")!
         let input = try! String(contentsOfFile: path, encoding: .utf8)
-        XCTAssertEqual(solve2(input: input), 968)
+        XCTAssertEqual(solve2(input: input), 4643)
     }
 }

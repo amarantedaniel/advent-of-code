@@ -10,9 +10,9 @@ extension Dictionary where Value == Int {
 }
 
 enum Parser {
-    static func parse(input: String) -> (String, Template, Rules) {
+    static func parse(input: String) -> (Template, Rules) {
         let components = input.components(separatedBy: "\n\n")
-        return (components[0], parseTemplate(input: components[0]), parseRules(input: components[1]))
+        return (parseTemplate(input: components[0]), parseRules(input: components[1]))
     }
 
     private static func parseTemplate(input: String) -> Template {
@@ -47,25 +47,22 @@ func execute(template: Template, rules: Rules) -> Template {
     return newTemplate
 }
 
-func countCharacters(initialText: String, template: Template) -> [Character: Int] {
-    var characters = template.reduce(into: [Character: Int]()) { dict, tuple in
+func countCharacters(template: [String: Int]) -> [Character: Int] {
+    return template.reduce(into: [Character: Int]()) { dict, tuple in
         dict.increment(at: tuple.key.first!, amount: tuple.value)
         dict.increment(at: tuple.key.last!, amount: tuple.value)
     }.reduce(into: [Character: Int]()) { dict, tuple in
-        dict[tuple.key] = tuple.value / 2
+        dict[tuple.key] = tuple.value / 2 + tuple.value % 2
     }
-    characters.increment(at: initialText.first!)
-    characters.increment(at: initialText.last!)
-    return characters
 }
 
 func solve(input: String, iterations: Int) -> Int {
-    let (text, template, rules) = Parser.parse(input: input)
+    let (template, rules) = Parser.parse(input: input)
     let result = (1...iterations).reduce(template) { template, _ in
         execute(template: template, rules: rules)
     }
 
-    let characters = countCharacters(initialText: text, template: result)
+    let characters = countCharacters(template: result)
         .sorted { $0.value < $1.value }
 
     return characters.last!.value - characters.first!.value

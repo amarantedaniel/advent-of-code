@@ -21,8 +21,8 @@ func parseInput(input: String) -> Area {
 
 func run(area: Area) -> Area {
     var newArea = area
-    for i in 0 ..< area.count {
-        for j in 0 ..< area[i].count {
+    for i in 0..<area.count {
+        for j in 0..<area[i].count {
             switch area[i][j] {
             case .ground where shouldGroundBecomeTrees(at: (x: i, y: j), on: area):
                 newArea[i][j] = .tree
@@ -89,8 +89,8 @@ func calculateResourceValue(area: Area) -> Int {
     var treeCount = 0
     var lumberyardCount = 0
 
-    for i in 0 ..< area.count {
-        for j in 0 ..< area[i].count {
+    for i in 0..<area.count {
+        for j in 0..<area[i].count {
             if area[i][j] == .tree {
                 treeCount += 1
             }
@@ -108,11 +108,10 @@ func print(area: Area) {
     })
 }
 
-let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
-var area = parseInput(input: input)
-for _ in 1 ... 10 {
-    area = run(area: area)
-    print(area: area)
+func solve1(input: String) -> Int {
+    var area = parseInput(input: input)
+    for _ in 1...10 {
+        area = run(area: area)
+    }
+    return calculateResourceValue(area: area)
 }
-
-print(calculateResourceValue(area: area))

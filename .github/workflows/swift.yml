@@ -17,6 +17,15 @@ jobs:
     - name: Run tests
       run: cd Y2018 && swift test -v
 
+  _2019:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cd Y2019 && swift build -v
+    - name: Run tests
+      run: cd Y2019 && swift test -v
+
   _2020:
     runs-on: macos-latest
     steps:

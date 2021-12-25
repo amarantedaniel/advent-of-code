@@ -24,8 +24,8 @@ func runProgram(_ input: [Int], noun: Int, verb: Int) -> Int {
 }
 
 func findParams(thatMatch result: Int, for input: [Int]) -> (noun: Int, verb: Int) {
-    for noun in 0 ... 99 {
-        for verb in 0 ... 99 {
+    for noun in 0...99 {
+        for verb in 0...99 {
             if runProgram(input, noun: noun, verb: verb) == result {
                 return (noun: noun, verb: verb)
             }
@@ -34,10 +34,11 @@ func findParams(thatMatch result: Int, for input: [Int]) -> (noun: Int, verb: In
     fatalError()
 }
 
-let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
-    .split(separator: ",")
-    .compactMap { Int($0) }
+func solve2(input: String) -> Int {
+    let input = input
+        .split(separator: ",")
+        .compactMap { Int($0) }
 
-let (noun, verb) = findParams(thatMatch: 19_690_720, for: input)
-
-print(100 * noun + verb)
+    let (noun, verb) = findParams(thatMatch: 19_690_720, for: input)
+    return 100 * noun + verb
+}

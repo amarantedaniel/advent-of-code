@@ -8,8 +8,9 @@ func calculateRequiredFuel(for mass: Int) -> Int {
     return 0
 }
 
-let input = try! String(contentsOfFile: "input.txt", encoding: .utf8)
-    .split(separator: "\n")
-    .compactMap { Int($0) }
-
-print(input.map(calculateRequiredFuel(for:)).reduce(0, +))
+func solve2(input: String) -> Int {
+    input
+        .split(separator: "\n")
+        .compactMap { Int($0) }
+        .map(calculateRequiredFuel(for:)).reduce(0, +)
+}

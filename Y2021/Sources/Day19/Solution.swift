@@ -34,10 +34,6 @@ struct Beacon: Hashable, Equatable, CustomStringConvertible {
         return (abs(self.x - beacon.x), abs(self.y - beacon.y), abs(self.z - beacon.z))
     }
 
-    static func - (lhs: Beacon, rhs: Beacon) -> Beacon {
-        return Beacon(x: lhs.x - rhs.x, y: lhs.y - lhs.x - rhs.y, z: lhs.z - rhs.z)
-    }
-
     func rotated(index: Int) -> Beacon {
         return rotations()[index]
     }
@@ -141,41 +137,59 @@ func findRotation(pairs: [(Beacon, Beacon)]) -> Int {
 
 func normalize(beacons: [Beacon], rotation: Int, vector: Vector) -> [Beacon] {
     return beacons
-    .map { $0.rotated(index: rotation) }
-    .map { $0.applyVector(vector: vector) }
+        .map { $0.rotated(index: rotation) }
+        .map { $0.applyVector(vector: vector) }
 }
 
-func doStuff(beacons: [Beacon], otherBeacons: [Beacon]) -> [Beacon]? {
+func addBeaconsToSameCoordinateSystem(beacons: [Beacon], otherBeacons: [Beacon]) -> (Vector, [Beacon])? {
     let beaconPairs = findPairs(beacons: beacons, otherBeacons: otherBeacons)
-    if beaconPairs.isEmpty { return nil }
+    if beaconPairs.count < 2 { return nil }
     let rotation = findRotation(pairs: beaconPairs)
     let vector = getVector(from: beaconPairs[0].1.rotated(index: rotation), to: beaconPairs[0].0)
     let normalizedBeacons = normalize(beacons: otherBeacons, rotation: rotation, vector: vector)
-    return Array(Set(beacons).union(normalizedBeacons))
+    return (vector, normalizedBeacons)
+}
+
+func calculateManhattanDistance(vectorA: Vector, vectorB: Vector) -> Int {
+    return abs(vectorA.x - vectorB.x) + abs(vectorA.y - vectorB.y) + abs(vectorA.z - vectorB.z)
+}
+
+func organizeBeacons(scanners: [Scanner]) -> (Set<Beacon>, [Vector]) {
+    var pending = Array(scanners.dropFirst())
+    var queue = [scanners[0]]
+    var done: Set<Beacon> = []
+    var vectors: [Vector] = [Vector(x: 0, y: 0, z: 0)]
+    while !queue.isEmpty {
+        let scanner = queue.removeFirst()
+        var aux: [Scanner] = []
+        for i in 0..<pending.count {
+            if let (vector, beacons) = addBeaconsToSameCoordinateSystem(beacons: scanner.beacons, otherBeacons: pending[i].beacons) {
+                vectors.append(vector)
+                queue.append(Scanner(beacons: beacons))
+            } else {
+                aux.append(pending[i])
+            }
+        }
+        pending = aux
+        done.formUnion(scanner.beacons)
+    }
+    return (done, vectors)
 }
 
 func solve1(input: String) -> Int {
     let scanners = Parser.parse(input: input)
-    var beacons = scanners[0].beacons
-    var pending = Array(scanners.dropFirst())
-    while !pending.isEmpty {
-        var aux: [Scanner] = []
-        for i in 0..<pending.count {
-            if let b = doStuff(beacons: beacons, otherBeacons: pending[i].beacons) {
-                beacons = b
-            } else {
-                aux.append(pending[i])
-            }
-            print("beacons: \(beacons.count)")
-            print("i: \(i)")
-        }
-        pending = aux
-        print("pending: \(pending.count)")
-    }
-
+    let (beacons, _) = organizeBeacons(scanners: scanners)
     return beacons.count
 }
 
-func solve2(input _: String) -> Int {
-    return 0
+func solve2(input: String) -> Int {
+    let scanners = Parser.parse(input: input)
+    let (_, vectors) = organizeBeacons(scanners: scanners)
+    var maximum = 0
+    for i in 0..<vectors.count {
+        for j in i..<vectors.count {
+            maximum = max(maximum, calculateManhattanDistance(vectorA: vectors[i], vectorB: vectors[j]))
+        }
+    }
+    return maximum
 }

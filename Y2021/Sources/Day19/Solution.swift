@@ -121,6 +121,9 @@ private func findPairs(beacons: [Beacon], otherBeacons: [Beacon]) -> [(Beacon, B
         let otherBeacon = findSameBeacon(beacon: beacon, from: beacons, in: otherBeacons)
         if let otherBeacon = otherBeacon {
             beaconPairs.append((beacon, otherBeacon))
+            if beaconPairs.count == 2 {
+                return beaconPairs
+            }
         }
     }
     return beaconPairs
@@ -128,13 +131,12 @@ private func findPairs(beacons: [Beacon], otherBeacons: [Beacon]) -> [(Beacon, B
 
 func findRotation(pairs: [(Beacon, Beacon)]) -> Int {
     let vectors = getVectors(between: pairs.map(\.0))
-    var rotation: Int = -1
     for (index, (rotationA, rotationB)) in zip(pairs[0].1.rotations(), pairs[1].1.rotations()).enumerated() {
         if rotationA.applyVector(vector: vectors[0]) == rotationB {
-            rotation = index
+            return index
         }
     }
-    return rotation
+    fatalError()
 }
 
 func normalize(beacons: [Beacon], rotation: Int, vector: Vector) -> [Beacon] {
@@ -143,20 +145,35 @@ func normalize(beacons: [Beacon], rotation: Int, vector: Vector) -> [Beacon] {
     .map { $0.applyVector(vector: vector) }
 }
 
-func doStuff(beacons: [Beacon], otherBeacons: [Beacon]) {
+func doStuff(beacons: [Beacon], otherBeacons: [Beacon]) -> [Beacon]? {
     let beaconPairs = findPairs(beacons: beacons, otherBeacons: otherBeacons)
+    if beaconPairs.isEmpty { return nil }
     let rotation = findRotation(pairs: beaconPairs)
-    // Vector is also the position of the other scanner
-    let vector = getVector(from: beaconPairs[0].0, to: beaconPairs[0].1.rotated(index: rotation))
-    print(beaconPairs.map(\.0))
-    print(normalize(beacons: beaconPairs.map(\.1), rotation: rotation, vector: vector))
-//    let normalizedBeacons = normalize(beacons: otherBeacons, rotation: rotation, vector: vector)
+    let vector = getVector(from: beaconPairs[0].1.rotated(index: rotation), to: beaconPairs[0].0)
+    let normalizedBeacons = normalize(beacons: otherBeacons, rotation: rotation, vector: vector)
+    return Array(Set(beacons).union(normalizedBeacons))
 }
 
 func solve1(input: String) -> Int {
     let scanners = Parser.parse(input: input)
-    doStuff(beacons: scanners[0].beacons, otherBeacons: scanners[1].beacons)
-    return 0
+    var beacons = scanners[0].beacons
+    var pending = Array(scanners.dropFirst())
+    while !pending.isEmpty {
+        var aux: [Scanner] = []
+        for i in 0..<pending.count {
+            if let b = doStuff(beacons: beacons, otherBeacons: pending[i].beacons) {
+                beacons = b
+            } else {
+                aux.append(pending[i])
+            }
+            print("beacons: \(beacons.count)")
+            print("i: \(i)")
+        }
+        pending = aux
+        print("pending: \(pending.count)")
+    }
+
+    return beacons.count
 }
 
 func solve2(input _: String) -> Int {

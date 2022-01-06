@@ -80,18 +80,17 @@ struct Beacon: Hashable, Equatable, CustomStringConvertible {
     }
 }
 
-private func getDistances(from beacon: Beacon, in scanner: Scanner) -> [BeaconDistance] {
-    scanner
-        .beacons
+private func getDistances(from beacon: Beacon, in beacons: [Beacon]) -> [BeaconDistance] {
+    beacons
         .filter { $0 != beacon }
         .map(beacon.distance(from:))
 }
 
-private func findSameBeacon(beacon: Beacon, from scanner: Scanner, in otherScanner: Scanner) -> Beacon? {
-    let distances = getDistances(from: beacon, in: scanner)
-    for beaconA in otherScanner.beacons {
+private func findSameBeacon(beacon: Beacon, from beacons: [Beacon], in otherBeacons: [Beacon]) -> Beacon? {
+    let distances = getDistances(from: beacon, in: beacons)
+    for beaconA in otherBeacons {
         var count = 0
-        for beaconB in otherScanner.beacons where beaconA != beaconB {
+        for beaconB in otherBeacons where beaconA != beaconB {
             let distance = beaconA.distance(from: beaconB)
             if distances.contains(other: distance) {
                 count += 1
@@ -116,35 +115,47 @@ func getVectors(between beacons: [Beacon]) -> [Vector] {
     return vectors
 }
 
-func doStuff(scanner: Scanner, otherScanner: Scanner) {
+private func findPairs(beacons: [Beacon], otherBeacons: [Beacon]) -> [(Beacon, Beacon)] {
     var beaconPairs: [(Beacon, Beacon)] = []
-    for beacon in scanner.beacons {
-        let otherBeacon = findSameBeacon(beacon: beacon, from: scanner, in: otherScanner)
+    for beacon in beacons {
+        let otherBeacon = findSameBeacon(beacon: beacon, from: beacons, in: otherBeacons)
         if let otherBeacon = otherBeacon {
             beaconPairs.append((beacon, otherBeacon))
         }
     }
-    let vectors = getVectors(between: beaconPairs.map(\.0))
+    return beaconPairs
+}
+
+func findRotation(pairs: [(Beacon, Beacon)]) -> Int {
+    let vectors = getVectors(between: pairs.map(\.0))
     var rotation: Int = -1
-    for (index, (rotationA, rotationB)) in zip(beaconPairs[0].1.rotations(), beaconPairs[1].1.rotations()).enumerated() {
+    for (index, (rotationA, rotationB)) in zip(pairs[0].1.rotations(), pairs[1].1.rotations()).enumerated() {
         if rotationA.applyVector(vector: vectors[0]) == rotationB {
             rotation = index
         }
     }
+    return rotation
+}
 
-    let originalBeacons = beaconPairs.map(\.0)
-    let rotatedBeacons = beaconPairs.map(\.1).map { $0.rotated(index: rotation) }
-    let vector = getVector(from: rotatedBeacons[0], to: originalBeacons[0])
-    let otherBeacons = otherScanner
-        .beacons
-        .map { $0.rotated(index: rotation) }
-        .map { $0.applyVector(vector: vector) }
-    print(otherBeacons)
+func normalize(beacons: [Beacon], rotation: Int, vector: Vector) -> [Beacon] {
+    return beacons
+    .map { $0.rotated(index: rotation) }
+    .map { $0.applyVector(vector: vector) }
+}
+
+func doStuff(beacons: [Beacon], otherBeacons: [Beacon]) {
+    let beaconPairs = findPairs(beacons: beacons, otherBeacons: otherBeacons)
+    let rotation = findRotation(pairs: beaconPairs)
+    // Vector is also the position of the other scanner
+    let vector = getVector(from: beaconPairs[0].0, to: beaconPairs[0].1.rotated(index: rotation))
+    print(beaconPairs.map(\.0))
+    print(normalize(beacons: beaconPairs.map(\.1), rotation: rotation, vector: vector))
+//    let normalizedBeacons = normalize(beacons: otherBeacons, rotation: rotation, vector: vector)
 }
 
 func solve1(input: String) -> Int {
     let scanners = Parser.parse(input: input)
-    doStuff(scanner: scanners[0], otherScanner: scanners[1])
+    doStuff(beacons: scanners[0].beacons, otherBeacons: scanners[1].beacons)
     return 0
 }
 

@@ -36,7 +36,7 @@ struct Cube {
     }
 }
 
-func calculateVolume(cube: Cube, cubes: ArraySlice<Cube>) -> Int {
+func calculateVolume(cube: Cube, previousCubes cubes: ArraySlice<Cube>) -> Int {
     let volume = cube.on ? cube.volume : 0
     if cubes.isEmpty {
         return volume
@@ -48,7 +48,7 @@ func calculateVolume(cube: Cube, cubes: ArraySlice<Cube>) -> Int {
 func calculateVolume(cubes: [Cube]) -> Int {
     var acc = 0
     for (i, cube) in cubes.enumerated() {
-        acc += calculateVolume(cube: cube, cubes: cubes[...(i - 1)])
+        acc += calculateVolume(cube: cube, previousCubes: cubes[...(i - 1)])
     }
     return acc
 }

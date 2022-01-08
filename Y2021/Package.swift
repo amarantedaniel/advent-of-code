@@ -29,6 +29,8 @@ let package = Package(
         .library(name: "Day21", targets: ["Day21"]),
         .library(name: "Day22", targets: ["Day22"]),
         .library(name: "Day23", targets: ["Day23"]),
+        .library(name: "Day24", targets: ["Day24"]),
+        .library(name: "Day25", targets: ["Day25"]),
     ],
     dependencies: [],
     targets: [
@@ -55,6 +57,8 @@ let package = Package(
         .target(name: "Day21", dependencies: []),
         .target(name: "Day22", dependencies: []),
         .target(name: "Day23", dependencies: []),
+        .target(name: "Day24", dependencies: []),
+        .target(name: "Day25", dependencies: []),
         .testTarget(name: "Day01Tests", dependencies: ["Day01"], resources: [.process("Input")]),
         .testTarget(name: "Day02Tests", dependencies: ["Day02"], resources: [.process("Input")]),
         .testTarget(name: "Day03Tests", dependencies: ["Day03"], resources: [.process("Input")]),
@@ -78,4 +82,6 @@ let package = Package(
         .testTarget(name: "Day21Tests", dependencies: ["Day21"], resources: [.process("Input")]),
         .testTarget(name: "Day22Tests", dependencies: ["Day22"], resources: [.process("Input")]),
         .testTarget(name: "Day23Tests", dependencies: ["Day23"], resources: [.process("Input")]),
+        .testTarget(name: "Day24Tests", dependencies: ["Day24"], resources: [.process("Input")]),
+        .testTarget(name: "Day25Tests", dependencies: ["Day25"], resources: [.process("Input")]),
     ])

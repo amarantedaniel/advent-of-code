@@ -10,6 +10,10 @@ extension ClosedRange {
         }
         return nil
     }
+
+    func contains(_ other: ClosedRange) -> Bool {
+        return contains(other.lowerBound) && contains(other.upperBound)
+    }
 }
 
 struct Cube {
@@ -20,14 +24,8 @@ struct Cube {
     let y: ClosedRange<Int>
     let z: ClosedRange<Int>
 
-    var isValid: Bool {
-        x.lowerBound >= -50 && x.upperBound <= 50 &&
-            y.lowerBound >= -50 && y.upperBound <= 50 &&
-            z.lowerBound >= -50 && z.upperBound <= 50
-    }
-
     var volume: Int {
-        x.count * y.count * z.count
+        on ? x.count * y.count * z.count : 0
     }
 
     func intersection(_ other: Cube) -> Cube? {
@@ -36,58 +34,31 @@ struct Cube {
         guard let zIntersection = z.intersection(other.z) else { return nil }
         return Cube(on: other.on, x: xIntersection, y: yIntersection, z: zIntersection)
     }
-
-    var coordinates: [Coordinate] {
-        var result: [Coordinate] = []
-        for xx in x {
-            for yy in y {
-                for zz in z {
-                    result.append(Coordinate(x: xx, y: yy, z: zz))
-                }
-            }
-        }
-        return result
-    }
-}
-
-struct Coordinate: Hashable {
-    let x: Int
-    let y: Int
-    let z: Int
-}
-
-func solve1(input: String) -> Int {
-    let cubes = Parser.parse(input: input)
-    var turnedOn: Set<Coordinate> = []
-    for cube in cubes where cube.isValid {
-        let coordinates = cube.coordinates
-        if cube.on {
-            turnedOn.formUnion(coordinates)
-        } else {
-            turnedOn.subtract(coordinates)
-        }
-    }
-    return turnedOn.count
 }
 
 func calculateVolume(cube: Cube, cubes: [Cube]) -> Int {
+    let volume = cube.on ? cube.volume : 0
     if cubes.isEmpty {
-        return cube.on ? cube.volume : 0
+        return volume
     }
-    if cube.on {
-        return cube.volume - calculateVolume(cubes: cubes.compactMap { cube.intersection($0) })
-    } else {
-        return -calculateVolume(cubes: cubes.compactMap { cube.intersection($0) })
-    }
+    let intersections = cubes.compactMap(cube.intersection(_:))
+    return volume - calculateVolume(cubes: intersections)
 }
 
 func calculateVolume(cubes: [Cube]) -> Int {
     var acc = 0
     for (i, cube) in cubes.enumerated() {
-        print(acc)
         acc += calculateVolume(cube: cube, cubes: Array(cubes[...(i - 1)]))
     }
     return acc
+}
+
+func solve1(input: String) -> Int {
+    let cubes = Parser.parse(input: input)
+    let validCubes = cubes.filter { cube in
+        (-50...50).contains(cube.x) && (-50...50).contains(cube.y) && (-50...50).contains(cube.z)
+    }
+    return calculateVolume(cubes: validCubes)
 }
 
 func solve2(input: String) -> Int {

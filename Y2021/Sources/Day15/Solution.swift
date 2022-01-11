@@ -1,4 +1,5 @@
 import Foundation
+import Shared
 
 struct Coordinate: Hashable {
     let i: Int
@@ -9,34 +10,38 @@ struct Coordinate: Hashable {
 
 typealias Risk = Int
 
-func dijkstra(cave: Cave) -> Int {
+func findPath(cave: Cave) -> Int {
     var visited: Set<Coordinate> = []
-    var remaining: Set<Coordinate> = [.zero]
     var risks: [Coordinate: Risk] = [:]
     for coordinate in cave.coordinates() {
         risks[coordinate] = Int.max
     }
     risks[.zero] = 0
-    while !remaining.isEmpty {
-        let node = remaining.min { risks[$0]! < risks[$1]! }!
-        remaining.remove(node)
-        visited.insert(node)
 
-        for neighboor in cave.neighboors(from: node) where !visited.contains(neighboor) {
-            remaining.insert(neighboor)
-            let risk = risks[node]! + cave.get(neighboor)
+    var heap = Heap<Coordinate, Risk>(priority: <)
+    heap.insert(.zero, priority: 0)
+
+    while !heap.isEmpty {
+        let current = heap.extract()!
+        if current == cave.lastCoordinate {
+            return risks[cave.lastCoordinate]!
+        }
+        visited.insert(current)
+        for neighboor in cave.neighboors(from: current) where !visited.contains(neighboor) {
+            let risk = risks[current]! + cave.get(neighboor)
             if risk < risks[neighboor]! {
                 risks[neighboor] = risk
+                heap.insert(neighboor, priority: risk)
             }
         }
     }
-    return risks[cave.lastCoordinate]!
+    fatalError()
 }
 
 func solve1(input: String) -> Int {
-    return dijkstra(cave: Parser.parse(input: input, repeating: 1))
+    return findPath(cave: Parser.parse(input: input, repeating: 1))
 }
 
 func solve2(input: String) -> Int {
-    return dijkstra(cave: Parser.parse(input: input, repeating: 5))
+    return findPath(cave: Parser.parse(input: input, repeating: 5))
 }

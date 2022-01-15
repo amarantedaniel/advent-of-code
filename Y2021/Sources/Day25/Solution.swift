@@ -1,41 +1,26 @@
 import Foundation
 
-enum Direction: Character {
+enum SeaCucumber: Character {
     case east = ">"
     case south = "v"
 }
 
-struct SeaCucumber {
-
-    var direction: Direction
-    var canMove: Bool
-
-    init?(rawValue: Character) {
-        guard let direction = Direction(rawValue: rawValue) else {
-            return nil
-        }
-        self.direction = direction
-        self.canMove = false
-    }
+private func hash(_ i: Int, _ j: Int) -> String {
+    return "\(i),\(j)"
 }
-
 private func moveEast(sea: inout [[SeaCucumber?]]) -> Bool {
     var hasMoved = false
+    var checked: Set<String> = []
     for i in 0..<sea.count {
         for j in 0..<sea[i].count {
             let nextJ = (j + 1) % sea[i].count
-            if sea[i][j]?.direction == .east, sea[i][nextJ] == nil {
-                sea[i][j]?.canMove = true
+            if checked.contains(hash(i, j)) || checked.contains(hash(i, nextJ)) {
+                continue
+            }
+            if sea[i][j] == .east, sea[i][nextJ] == nil {
+                move(sea: &sea, checked: &checked, i0: i, j0: j, i1: i, j1: nextJ)
                 hasMoved = true
             }
-        }
-    }
-    for i in 0..<sea.count {
-        for j in 0..<sea[i].count where sea[i][j]?.canMove == true {
-            let nextJ = (j + 1) % sea[i].count
-            sea[i][nextJ] = sea[i][j]
-            sea[i][j] = nil
-            sea[i][nextJ]?.canMove = false
         }
     }
     return hasMoved
@@ -43,24 +28,28 @@ private func moveEast(sea: inout [[SeaCucumber?]]) -> Bool {
 
 private func moveSouth(sea: inout [[SeaCucumber?]]) -> Bool {
     var hasMoved = false
+    var checked: Set<String> = []
     for i in 0..<sea.count {
         for j in 0..<sea[i].count {
             let nextI = (i + 1) % sea.count
-            if sea[i][j]?.direction == .south, sea[nextI][j] == nil {
-                sea[i][j]?.canMove = true
+            if checked.contains(hash(i, j)) || checked.contains(hash(nextI, j)) {
+                continue
+            }
+            if sea[i][j] == .south, sea[nextI][j] == nil {
+                move(sea: &sea, checked: &checked, i0: i, j0: j, i1: nextI, j1: j)
                 hasMoved = true
             }
         }
     }
-    for i in 0..<sea.count {
-        for j in 0..<sea[i].count where sea[i][j]?.canMove == true {
-            let nextI = (i + 1) % sea.count
-            sea[nextI][j] = sea[i][j]
-            sea[i][j] = nil
-            sea[nextI][j]?.canMove = false
-        }
-    }
     return hasMoved
+}
+
+
+private func move(sea: inout [[SeaCucumber?]], checked: inout Set<String>, i0: Int, j0: Int, i1: Int, j1: Int) {
+    sea[i1][j1] = sea[i0][j0]
+    sea[i0][j0] = nil
+    checked.insert(hash(i0, j0))
+    checked.insert(hash(i1, j1))
 }
 
 func move(sea: inout [[SeaCucumber?]]) -> Bool {

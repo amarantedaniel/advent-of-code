@@ -1,11 +1,9 @@
 import Foundation
 
 func solve1(input: String) -> Int {
-    let (packet, _) = Parser.parse(input: input)
-    return packet.countVersions()
+    0
 }
 
 func solve2(input: String) -> Int {
-    let (packet, _) = Parser.parse(input: input)
-    return packet.calculate()
+    0
 }

@@ -44,3 +44,11 @@ jobs:
     - name: Run tests
       run: cd Y2021 && swift test -v
 
+  _2022:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cd Y2022 && swift build -v
+    - name: Run tests
+      run: cd Y2022 && swift test -v

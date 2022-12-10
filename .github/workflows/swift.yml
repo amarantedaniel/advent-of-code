@@ -11,7 +11,7 @@ jobs:
   _2018:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: cd Y2018 && swift build -v
     - name: Run tests
@@ -20,7 +20,7 @@ jobs:
   _2019:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: cd Y2019 && swift build -v
     - name: Run tests
@@ -29,7 +29,7 @@ jobs:
   _2020:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: cd Y2020 && swift build -v
     - name: Run tests
@@ -38,7 +38,7 @@ jobs:
   _2021:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: cd Y2021 && swift build -v
     - name: Run tests
@@ -47,7 +47,7 @@ jobs:
   _2022:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: cd Y2022 && swift build -v
     - name: Run tests

@@ -2,31 +2,30 @@ import Foundation
 
 enum Parser {
     static func parse(input: String) -> [Monkey] {
-        input
-            .components(separatedBy: "\n\n")
-            .map { parseMonkey(input: $0) }
-    }
-
-    private static func parseMonkey(input: String) -> Monkey {
-        let lines = input.split(separator: "\n")
-        let id = Int(lines[0].split(separator: " ").last!.dropLast())!
-        let items = lines[1]
-            .components(separatedBy: ": ")
-            .last!
-            .components(separatedBy: ", ")
-            .compactMap { Int($0) }
-        let operation = parseOperation(
-            input: lines[2]
-                .components(separatedBy: "= ")
-                .last!
-        )
-        let throwTo = parseThrow(input: Array(lines[3...]))
-        return Monkey(
-            id: id,
-            items: items,
-            operation: operation,
-            throwTo: throwTo
-        )
+        let pattern = """
+        Monkey ([0-9]):
+          Starting items: ([0-9]+(?:, [0-9]+)*)
+          Operation: new = (old [\\+\\*] (?:[0-9]+|old))
+          Test: divisible by ([0-9]+)
+            If true: throw to monkey ([0-9])
+            If false: throw to monkey ([0-9])
+        """
+        let regex = try! NSRegularExpression(pattern: pattern)
+        let range = NSRange(input.startIndex..., in: input)
+        let matches = regex.matches(in: input, range: range)
+        return matches.map { match in
+            let substrings = (1 ..< match.numberOfRanges).map { index in
+                input[Range(match.range(at: index), in: input)!]
+            }
+            return Monkey(
+                id: Int(substrings[0])!,
+                items: substrings[1].components(separatedBy: ", ").compactMap { Int($0) },
+                operation: parseOperation(input: String(substrings[2])),
+                throwTo: { item in
+                    item % Int(substrings[3])! == 0 ? Int(substrings[4])! : Int(substrings[5])!
+                }
+            )
+        }
     }
 
     private static func parseOperation(input: String) -> (Item) -> Item {
@@ -46,18 +45,6 @@ enum Parser {
             }
         default:
             fatalError()
-        }
-    }
-
-    private static func parseThrow(input: [Substring]) -> (Item) -> Int {
-        let numbers = input.map { line in
-            line
-                .split(separator: " ")
-                .compactMap { Int($0) }
-                .last!
-        }
-        return { item in
-            item % numbers[0] == 0 ? numbers[1] : numbers[2]
         }
     }
 }

@@ -4,29 +4,6 @@ import Shared
 struct Node {
     let character: Character
     let value: Int
-    var isVisited = false
-
-    init(character: Character) {
-        self.character = character
-        switch character {
-        case "S":
-            self.value = Int(Character("a").asciiValue!)
-        case "E":
-            self.value = Int(Character("z").asciiValue!)
-        default:
-            self.value = Int(character.asciiValue!)
-        }
-    }
-}
-
-private func parse(input: String) -> [[Node]] {
-    input.split(separator: "\n").reduce(into: []) { matrix, line in
-        matrix.append(
-            Array(line).map { character in
-                Node(character: character)
-            }
-        )
-    }
 }
 
 struct Point: Hashable {
@@ -84,7 +61,7 @@ func find(start: Point, grid: [[Node]], canWalk: (Node, Node) -> Bool) -> [Point
 }
 
 func solve1(input: String) -> Int {
-    let grid = parse(input: input)
+    let grid = Parser.parse(input: input)
     let start = find(character: "S", in: grid)!
     let end = find(character: "E", in: grid)!
     let result = find(start: start, grid: grid, canWalk: { from, to in
@@ -94,7 +71,7 @@ func solve1(input: String) -> Int {
 }
 
 func solve2(input: String) -> Int {
-    let grid = parse(input: input)
+    let grid = Parser.parse(input: input)
     let end = find(character: "E", in: grid)!
     let result = find(start: end, grid: grid, canWalk: { from, to in
         from.value - to.value <= 1

@@ -1,5 +1,6 @@
+// import Shared
+import Collections
 import Foundation
-import Shared
 
 struct Node {
     let character: Character
@@ -33,6 +34,19 @@ private func getNeighboors(from current: Point, in grid: [[Node]]) -> [Point] {
     return neighboors
 }
 
+struct StepsFromPoint: Hashable, Comparable {
+    let point: Point
+    let steps: Int
+
+    static func < (lhs: StepsFromPoint, rhs: StepsFromPoint) -> Bool {
+        lhs.steps < rhs.steps
+    }
+
+    static func == (lhs: StepsFromPoint, rhs: StepsFromPoint) -> Bool {
+        return lhs.point == rhs.point
+    }
+}
+
 func find(start: Point, grid: [[Node]], canWalk: (Node, Node) -> Bool) -> [Point: Int] {
     var steps: [Point: Int] = [:]
     for y in 0..<grid.count {
@@ -41,10 +55,11 @@ func find(start: Point, grid: [[Node]], canWalk: (Node, Node) -> Bool) -> [Point
         }
     }
     steps[start] = 0
-    var heap = Heap<Point, Int>(priority: <)
-    heap.insert(start, priority: 0)
+    var heap = Heap<StepsFromPoint>()
+    heap.insert(.init(point: start, steps: 0))
+
     while !heap.isEmpty {
-        let current = heap.extract()!
+        let current = heap.popMin()!.point
         let node = grid[current.y][current.x]
         for point in getNeighboors(from: current, in: grid) {
             let neighboor = grid[point.y][point.x]
@@ -52,7 +67,7 @@ func find(start: Point, grid: [[Node]], canWalk: (Node, Node) -> Bool) -> [Point
                 let count = steps[current]! + 1
                 if count < steps[point]! {
                     steps[point] = count
-                    heap.insert(point, priority: count)
+                    heap.insert(.init(point: point, steps: count))
                 }
             }
         }

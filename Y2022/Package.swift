@@ -33,7 +33,9 @@ let package = Package(
         .library(name: "Day24", targets: ["Day24"]),
         .library(name: "Day25", targets: ["Day25"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-collections.git", branch: "release/1.1")
+    ],
     targets: [
         .target(name: "Shared", dependencies: []),
         .target(name: "Day01", dependencies: []),
@@ -47,7 +49,9 @@ let package = Package(
         .target(name: "Day09", dependencies: []),
         .target(name: "Day10", dependencies: []),
         .target(name: "Day11", dependencies: []),
-        .target(name: "Day12", dependencies: ["Shared"]),
+        .target(name: "Day12", dependencies: [
+            .product(name: "Collections", package: "swift-collections")
+        ]),
         .target(name: "Day13", dependencies: []),
         .target(name: "Day14", dependencies: []),
         .target(name: "Day15", dependencies: []),
@@ -86,4 +90,5 @@ let package = Package(
         .testTarget(name: "Day23Tests", dependencies: ["Day23"], resources: [.process("Input")]),
         .testTarget(name: "Day24Tests", dependencies: ["Day24"], resources: [.process("Input")]),
         .testTarget(name: "Day25Tests", dependencies: ["Day25"], resources: [.process("Input")]),
-    ])
+    ]
+)

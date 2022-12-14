@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Collections
 
 struct Coordinate: Hashable {
     let i: Int
@@ -10,6 +10,19 @@ struct Coordinate: Hashable {
 
 typealias Risk = Int
 
+struct CoordinateForRisk: Hashable, Comparable {
+    let coordinate: Coordinate
+    let steps: Risk
+
+    static func < (lhs: CoordinateForRisk, rhs: CoordinateForRisk) -> Bool {
+        lhs.steps < rhs.steps
+    }
+
+    static func == (lhs: CoordinateForRisk, rhs: CoordinateForRisk) -> Bool {
+        return lhs.coordinate == rhs.coordinate
+    }
+}
+
 func findPath(cave: Cave) -> Int {
     var visited: Set<Coordinate> = []
     var risks: [Coordinate: Risk] = [:]
@@ -18,11 +31,11 @@ func findPath(cave: Cave) -> Int {
     }
     risks[.zero] = 0
 
-    var heap = Heap<Coordinate, Risk>(priority: <)
-    heap.insert(.zero, priority: 0)
+    var heap = Heap<CoordinateForRisk>()
+    heap.insert(.init(coordinate: .zero, steps: 0))
 
     while !heap.isEmpty {
-        let current = heap.extract()!
+        let current = heap.removeMin().coordinate
         if current == cave.lastCoordinate {
             return risks[cave.lastCoordinate]!
         }
@@ -31,7 +44,7 @@ func findPath(cave: Cave) -> Int {
             let risk = risks[current]! + cave.get(neighboor)
             if risk < risks[neighboor]! {
                 risks[neighboor] = risk
-                heap.insert(neighboor, priority: risk)
+                heap.insert(.init(coordinate: neighboor, steps: risk))
             }
         }
     }

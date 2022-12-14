@@ -1,5 +1,5 @@
+import Collections
 import Foundation
-import Shared
 
 extension Array {
     func inserting(_ element: Element, at index: Int) -> Array {
@@ -160,14 +160,27 @@ enum Amphipod: Character {
     }
 }
 
+struct MapWithHeuristic: Hashable, Comparable {
+    let map: Map
+    let heuristic: Int
+
+    static func < (lhs: MapWithHeuristic, rhs: MapWithHeuristic) -> Bool {
+        lhs.heuristic < rhs.heuristic
+    }
+
+    static func == (lhs: MapWithHeuristic, rhs: MapWithHeuristic) -> Bool {
+        return lhs.map == rhs.map
+    }
+}
+
 func getMinimumEnergy(map: Map) -> Int {
     var visited: Set<Map> = []
     var g: [Map: Int] = [map: 0]
-    var heap = Heap<Map, Int>(priority: <)
-    heap.insert(map, priority: map.heuristic())
+    var heap = Heap<MapWithHeuristic>()
+    heap.insert(.init(map: map, heuristic: map.heuristic()))
 
     while !heap.isEmpty {
-        let current = heap.extract()!
+        let current = heap.removeMin().map
         if current.isCorrect() {
             return g[current]!
         }
@@ -176,7 +189,7 @@ func getMinimumEnergy(map: Map) -> Int {
             let gScore = g[current]! + energy
             if gScore < (g[move] ?? Int.max) {
                 g[move] = gScore
-                heap.insert(move, priority: gScore + move.heuristic())
+                heap.insert(.init(map: move, heuristic: gScore + move.heuristic()))
             }
         }
     }

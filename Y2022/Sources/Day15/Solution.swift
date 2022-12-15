@@ -70,30 +70,22 @@ func solve1(input: String) -> Int {
         }.sorted {
             $0.lowerBound < $1.lowerBound
         }
-    let min = ranges.map(\.lowerBound).min()!
-    let max = ranges.map(\.upperBound).max()!
 
     let joined = join(ranges: ranges)
     let sensors = sensorsAndBeacons.map(\.0)
     let beacons = sensorsAndBeacons.map(\.1)
 
-    var emptySpacesCount = 0
-    var overlappingBeaconsAndSensorsCount = 0
-    for i in 0 ..< joined.count - 1 {
-        var range = joined[i]
-        let other = joined[i + 1]
-
+    var count = 0
+    for range in joined {
+        count += range.count
         if contains(points: sensors, range: range, in: row) {
-            overlappingBeaconsAndSensorsCount += 1
+            count -= 1
         }
         if contains(points: beacons, range: range, in: row) {
-            overlappingBeaconsAndSensorsCount += 1
+            count -= 1
         }
-        let subtraction = other.lowerBound - range.upperBound - 1
-        emptySpacesCount += subtraction
-        range = other
     }
-    return max - min - emptySpacesCount - overlappingBeaconsAndSensorsCount
+    return count
 }
 
 func solve2(input: String) -> Int {

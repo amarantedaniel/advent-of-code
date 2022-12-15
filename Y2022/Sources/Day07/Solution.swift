@@ -1,5 +1,4 @@
 import Foundation
-import Shared
 
 private func calculateDirectorySizes(input: String) -> [String: Int] {
     let lines = input
@@ -42,4 +41,10 @@ func solve2(input: String) -> Int {
         .map(\.value)
         .filter { $0 + unusedSpace >= 30000000 }
         .min()!
+}
+
+extension Dictionary where Value == Int {
+    mutating func increment(at index: Key, amount: Int = 1) {
+        self[index] = (self[index] ?? 0) + amount
+    }
 }

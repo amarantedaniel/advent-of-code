@@ -6,7 +6,6 @@ import PackageDescription
 let package = Package(
     name: "Y2022",
     products: [
-        .library(name: "Shared", targets: ["Shared"]),
         .library(name: "Day01", targets: ["Day01"]),
         .library(name: "Day02", targets: ["Day02"]),
         .library(name: "Day03", targets: ["Day03"]),
@@ -37,14 +36,13 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-collections.git", branch: "release/1.1")
     ],
     targets: [
-        .target(name: "Shared", dependencies: []),
         .target(name: "Day01", dependencies: []),
         .target(name: "Day02", dependencies: []),
         .target(name: "Day03", dependencies: []),
         .target(name: "Day04", dependencies: []),
         .target(name: "Day05", dependencies: []),
         .target(name: "Day06", dependencies: []),
-        .target(name: "Day07", dependencies: ["Shared"]),
+        .target(name: "Day07", dependencies: []),
         .target(name: "Day08", dependencies: []),
         .target(name: "Day09", dependencies: []),
         .target(name: "Day10", dependencies: []),

@@ -2,7 +2,6 @@
 import XCTest
 
 class SolutionTests: XCTestCase {
-
     func test_solve1_sample() {
         let path = Bundle.module.path(forResource: "sample", ofType: "txt")!
         let input = try! String(contentsOfFile: path, encoding: .utf8)

@@ -84,13 +84,58 @@ func solve1(input: String, row: Int) -> Int {
     return result
 }
 
+private func getPoints(sensor: Point, beacon: Point) -> Set<Point> {
+    let distance = distance(between: sensor, and: beacon) + 1
+    let edges = [
+        Point(x: sensor.x - distance, y: sensor.y),
+        Point(x: sensor.x, y: sensor.y - distance),
+        Point(x: sensor.x + distance, y: sensor.y),
+        Point(x: sensor.x, y: sensor.y + distance),
+        Point(x: sensor.x - distance, y: sensor.y)
+    ]
+    var points: Set<Point> = []
+    for i in 0 ..< edges.count - 1 {
+        var current = edges[i]
+        let end = edges[i + 1]
+        let dx = min(max(end.x - current.x, -1), 1)
+        let dy = min(max(end.y - current.y, -1), 1)
+        points.insert(current)
+        while current != end {
+            current = Point(x: current.x + dx, y: current.y + dy)
+            points.insert(current)
+        }
+    }
+    return points
+}
+
+private func findPoint(points: Set<Point>, in sensorsAndBeacons: [(Point, Point)]) -> Point? {
+    points.first { point in
+        isOutsideAllRanges(point: point, against: sensorsAndBeacons)
+    }
+}
+
+private func isOutsideAllRanges(
+    point: Point,
+    against sensorsAndBeacons: [(Point, Point)]
+) -> Bool {
+    sensorsAndBeacons.allSatisfy { pair in
+        isOutsideRange(sensor: pair.0, beacon: pair.1, point: point)
+    }
+}
+
+private func isOutsideRange(sensor: Point, beacon: Point, point: Point) -> Bool {
+    let distanceFromBeacon = distance(between: sensor, and: beacon)
+    let distanceFromPoint = distance(between: sensor, and: point)
+    return distanceFromPoint > distanceFromBeacon
+}
+
 func solve2(input: String, row: Int) -> UInt64 {
     let sensorsAndBeacons = parse(input: input)
-    for y in 0...row {
-        let ranges = getRanges(from: sensorsAndBeacons, row: y)
-        if ranges.count > 1 {
-            let x = ranges[0].upperBound + 1
-            return UInt64(y) + (UInt64(x) * 4000000)
+    for (sensor, beacon) in sensorsAndBeacons {
+        let points = getPoints(sensor: sensor, beacon: beacon)
+            .filter { $0.x >= 0 && $0.x <= row && $0.y >= 0 && $0.y <= row }
+        if let point = findPoint(points: points, in: sensorsAndBeacons) {
+            return UInt64(point.y) + (UInt64(point.x) * 4000000)
         }
     }
     fatalError()

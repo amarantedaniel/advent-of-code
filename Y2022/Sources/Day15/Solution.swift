@@ -1,6 +1,6 @@
 import Foundation
 
-struct Point {
+struct Point: Hashable {
     let x: Int
     let y: Int
 }
@@ -20,11 +20,17 @@ private func parse(input: String) -> [(Point, Point)] {
     }
 }
 
-private func distance(between lhs: Point, and rhs: Point) -> Int {
-    abs(lhs.x - rhs.x) + abs(lhs.y - rhs.y)
+private func getRanges(from sensorsAndBeacons: [(Point, Point)], row: Int) -> [ClosedRange<Int>] {
+    let ranges = sensorsAndBeacons
+        .compactMap { sensor, beacon in
+            checkOverlaps(sensor: sensor, beacon: beacon, row: row)
+        }.sorted {
+            $0.lowerBound < $1.lowerBound
+        }
+    return join(ranges: ranges)
 }
 
-func checkOverlaps(sensor: Point, beacon: Point, row: Int) -> ClosedRange<Int>? {
+private func checkOverlaps(sensor: Point, beacon: Point, row: Int) -> ClosedRange<Int>? {
     let distanceToBeacon = distance(between: sensor, and: beacon)
     let distanceToRow = abs(sensor.y - row)
     if distanceToRow > distanceToBeacon {
@@ -35,18 +41,16 @@ func checkOverlaps(sensor: Point, beacon: Point, row: Int) -> ClosedRange<Int>? 
     return range
 }
 
-func join(lhs: ClosedRange<Int>, rhs: ClosedRange<Int>) -> ClosedRange<Int> {
-    let lowerBound = min(lhs.lowerBound, rhs.lowerBound)
-    let upperBound = max(lhs.upperBound, rhs.upperBound)
-    return lowerBound...upperBound
+private func distance(between lhs: Point, and rhs: Point) -> Int {
+    abs(lhs.x - rhs.x) + abs(lhs.y - rhs.y)
 }
 
-func join(ranges: [ClosedRange<Int>]) -> [ClosedRange<Int>] {
+private func join(ranges: [ClosedRange<Int>]) -> [ClosedRange<Int>] {
     var joined: [ClosedRange<Int>] = []
     var open = ranges[0]
     for i in 1 ..< ranges.count {
         let other = ranges[i]
-        if open.overlaps(other) {
+        if other.lowerBound - open.upperBound <= 1 {
             open = join(lhs: open, rhs: other)
         } else {
             joined.append(open)
@@ -57,37 +61,37 @@ func join(ranges: [ClosedRange<Int>]) -> [ClosedRange<Int>] {
     return joined
 }
 
-private func contains(points: [Point], range: ClosedRange<Int>, in row: Int) -> Bool {
-    points.first(where: { $0.y == row && range.contains($0.x) }) != nil
+private func join(lhs: ClosedRange<Int>, rhs: ClosedRange<Int>) -> ClosedRange<Int> {
+    let lowerBound = min(lhs.lowerBound, rhs.lowerBound)
+    let upperBound = max(lhs.upperBound, rhs.upperBound)
+    return lowerBound...upperBound
 }
 
-func solve1(input: String) -> Int {
-    let row = 2000000
+private func count(points: Set<Point>, range: ClosedRange<Int>, in row: Int) -> Int {
+    points
+        .filter { $0.y == row && range.contains($0.x) }
+        .count
+}
+
+func solve1(input: String, row: Int) -> Int {
     let sensorsAndBeacons = parse(input: input)
-    let ranges = sensorsAndBeacons
-        .compactMap { sensor, beacon in
-            checkOverlaps(sensor: sensor, beacon: beacon, row: row)
-        }.sorted {
-            $0.lowerBound < $1.lowerBound
-        }
+    let ranges = getRanges(from: sensorsAndBeacons, row: row)
+    let points = Set(sensorsAndBeacons.flatMap { [$0.0, $0.1] })
+    var result = 0
+    for range in ranges {
+        result += range.count - count(points: points, range: range, in: row)
+    }
+    return result
+}
 
-    let joined = join(ranges: ranges)
-    let sensors = sensorsAndBeacons.map(\.0)
-    let beacons = sensorsAndBeacons.map(\.1)
-
-    var count = 0
-    for range in joined {
-        count += range.count
-        if contains(points: sensors, range: range, in: row) {
-            count -= 1
-        }
-        if contains(points: beacons, range: range, in: row) {
-            count -= 1
+func solve2(input: String, row: Int) -> UInt64 {
+    let sensorsAndBeacons = parse(input: input)
+    for y in 0...row {
+        let ranges = getRanges(from: sensorsAndBeacons, row: y)
+        if ranges.count > 1 {
+            let x = ranges[0].upperBound + 1
+            return UInt64(y) + (UInt64(x) * 4000000)
         }
     }
-    return count
-}
-
-func solve2(input: String) -> Int {
-    0
+    fatalError()
 }

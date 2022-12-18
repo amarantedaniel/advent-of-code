@@ -18,9 +18,6 @@ struct Board {
     }
 
     func canMove(position: Position, piece: Piece) -> Bool {
-//        print("calling canmove")
-//        print("piece: \n\(piece)")
-//        print("position: \(position)")
         for y in position.y..<(position.y + piece.shapes.count) {
             for x in position.x..<(position.x + piece.shapes[y - position.y].count) {
                 if y < 0 || x < 0 || y >= grid.count || x >= grid[y].count {

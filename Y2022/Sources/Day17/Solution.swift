@@ -54,41 +54,25 @@ func solve1(input: String) -> Int {
     board.reserveSpace(for: piece)
     while true {
         if pieceIndex == 2022 {
-            print(board.getHeight())
-            break
+            return board.getHeight()
         }
         let direction = getDirection(at: directionIndex, directions: directions)
         var attempt = position.move(direction: direction)
         if board.canMove(position: attempt, piece: piece) {
             position = attempt
         }
-//        if pieceIndex == 21 {
-//            print(direction)
-//            print(board.display(piece: piece, position: position))
-//            print()
-//        }
         attempt = position.move(direction: .down)
         if board.canMove(position: attempt, piece: piece) {
             position = attempt
-//            if pieceIndex == 21 {
-//                print(Direction.down)
-//                print(board.display(piece: piece, position: position))
-//                print()
-//            }
         } else {
             board.settle(piece: piece, at: position)
             pieceIndex += 1
             piece = getPiece(at: pieceIndex, pieces: pieces)
             board.reserveSpace(for: piece)
             position = Position(x: 2, y: 0)
-//            if pieceIndex == 21 {
-//                print(board.display(piece: piece, position: position))
-//                print()
-//            }
         }
         directionIndex += 1
     }
-    return 0
 }
 
 func solve2(input: String) -> Int {

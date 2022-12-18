@@ -26,7 +26,7 @@ struct Board {
                 if y < 0 || x < 0 || y >= grid.count || x >= grid[y].count {
                     return false
                 }
-                if grid[y][x] == .rock && piece.shapes[y - position.y][x - position.x] == .rock {
+                if grid[y][x] == .rock, piece.shapes[y - position.y][x - position.x] == .rock {
                     return false
                 }
             }
@@ -37,7 +37,11 @@ struct Board {
     mutating func settle(piece: Piece, at position: Position) {
         for y in position.y..<(position.y + piece.shapes.count) {
             for x in position.x..<(position.x + piece.shapes[y - position.y].count) {
-                grid[y][x] = piece.shapes[y - position.y][x - position.x]
+                if piece.shapes[y - position.y][x - position.x] == .rock || grid[y][x] == .rock {
+                    grid[y][x] = .rock
+                } else {
+                    grid[y][x] = .empty
+                }
             }
         }
         trimExtraLines()

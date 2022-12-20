@@ -1,19 +1,19 @@
 import Foundation
 
 class Node {
-    let number: Int
+    let number: Int64
     weak var next: Node?
 
-    init(number: Int) {
+    init(number: Int64) {
         self.number = number
     }
 }
 
-private func parse(input: String) -> [Node] {
+private func parse(input: String, multiplyBy: Int64) -> [Node] {
     let numbers = input
         .split(separator: "\n")
-        .compactMap { Int($0) }
-        .map { Node(number: $0) }
+        .compactMap { Int64($0) }
+        .map { Node(number: $0 * multiplyBy) }
     for i in 0 ..< numbers.count - 1 {
         numbers[i].next = numbers[i + 1]
     }
@@ -30,26 +30,7 @@ func format(start: Node) -> String {
     return result.joined(separator: ", ")
 }
 
-func solve1(input: String) -> Int {
-    let nodes = parse(input: input)
-    var head = nodes.first!
-//    print(format(start: head))
-    for i in 0 ..< nodes.count {
-        let node = nodes[i]
-        if node.number == 0 {
-            continue
-        }
-        let (head2, index) = delete(node: node, head: head)
-        let index2 = adjust(index: index, number: node.number, count: nodes.count)
-        head = insert(node: node, at: index2, head: head2)
-//        print(format(start: head))
-    }
-    let zero = nodes.first { $0.number == 0 }!
-    print(getResult(head: head, zero: zero, count: nodes.count))
-    return 0
-}
-
-private func adjust(index: Int, number: Int, count: Int) -> Int {
+private func adjust(index: Int64, number: Int64, count: Int64) -> Int64 {
     let index2 = (index + number) % (count - 1)
     if number > 0 {
         return index2
@@ -61,11 +42,11 @@ private func adjust(index: Int, number: Int, count: Int) -> Int {
     }
 }
 
-private func delete(node: Node, head: Node) -> (Node, Int) {
+private func delete(node: Node, head: Node) -> (Node, Int64) {
     if node === head {
         return (node.next!, 0)
     }
-    var index = 1
+    var index: Int64 = 1
     var aux: Node? = head
     while aux?.next !== node {
         index += 1
@@ -75,7 +56,7 @@ private func delete(node: Node, head: Node) -> (Node, Int) {
     return (head, index)
 }
 
-func insert(node: Node, at index: Int, head: Node) -> Node {
+func insert(node: Node, at index: Int64, head: Node) -> Node {
     if index == 0 {
         node.next = head
         return node
@@ -89,8 +70,8 @@ func insert(node: Node, at index: Int, head: Node) -> Node {
     return head
 }
 
-func getResult(head: Node, zero: Node, count: Int) -> Int {
-    var result = 0
+func getResult(head: Node, zero: Node, count: Int64) -> Int64 {
+    var result: Int64 = 0
     var index = 0
     var aux: Node? = zero
     while aux?.next !== zero {
@@ -107,6 +88,34 @@ func getResult(head: Node, zero: Node, count: Int) -> Int {
     return result
 }
 
-func solve2(input: String) -> Int {
-    0
+private func shuffle(nodes: [Node], head: Node) -> Node {
+    var head = head
+    for i in 0 ..< nodes.count {
+        let node = nodes[i]
+        if node.number == 0 {
+            continue
+        }
+        let (head2, index) = delete(node: node, head: head)
+        let index2 = adjust(index: index, number: node.number, count: Int64(nodes.count))
+        head = insert(node: node, at: index2, head: head2)
+    }
+    return head
+}
+
+func solve1(input: String) -> Int64 {
+    let nodes = parse(input: input, multiplyBy: 1)
+    var head = nodes.first!
+    head = shuffle(nodes: nodes, head: head)
+    let zero = nodes.first { $0.number == 0 }!
+    return getResult(head: head, zero: zero, count: Int64(nodes.count))
+}
+
+func solve2(input: String) -> Int64 {
+    let nodes = parse(input: input, multiplyBy: 811589153)
+    var head = nodes.first!
+    for _ in 0 ..< 10 {
+        head = shuffle(nodes: nodes, head: head)
+    }
+    let zero = nodes.first { $0.number == 0 }!
+    return getResult(head: head, zero: zero, count: Int64(nodes.count))
 }

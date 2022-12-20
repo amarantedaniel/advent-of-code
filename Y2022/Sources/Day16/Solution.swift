@@ -7,25 +7,6 @@ struct Valve {
     let next: [String]
 }
 
-private func parse(input: String) -> [Valve] {
-    let pattern = """
-    Valve ([A-Z]+) has flow rate=([0-9]+); tunnel(?:s*) lead(?:s*) to valve(?:s*) ([A-Z]+(?:, [A-Z]+)*)
-    """
-    let regex = try! NSRegularExpression(pattern: pattern)
-    let range = NSRange(input.startIndex..., in: input)
-    let matches = regex.matches(in: input, range: range)
-    return matches.map { match in
-        let substrings = (1 ..< match.numberOfRanges).map { index in
-            input[Range(match.range(at: index), in: input)!]
-        }
-        return Valve(
-            id: String(substrings[0]),
-            flow: Int(substrings[1])!,
-            next: substrings[2].components(separatedBy: ", ")
-        )
-    }
-}
-
 struct Cache: Hashable {
     let valveId: String
     let open: Set<String>
@@ -179,27 +160,27 @@ func navigate(
     return result
 }
 
-func solve1(input: String) -> Int {
-    let valves = parse(input: input)
-    let nodes = valves.reduce(into: [String: Valve]()) {
-        $0[$1.id] = $1
-    }
-    let start = valves[0]
-    var cache: [Cache: Int] = [:]
-    print(navigate(valveId: start.id, valves: nodes, open: [], depth: 33, cache: &cache))
-    print(otherSolve(nodes: nodes, start: start.id))
-    return 1651
-}
-
-func solve2(input: String) -> Int {
-    let valves = parse(input: input)
-    let nodes = valves.reduce(into: [String: Valve]()) {
-        $0[$1.id] = $1
-    }
-    let start = valves[0]
-    var cache: [Cache2: Int] = [:]
-    return navigate2(valveId: start.id, elephantId: start.id, valves: nodes, open: [], depth: 25, cache: &cache)
-}
+//func solve1(input: String) -> Int {
+//    let valves = parse(input: input)
+//    let nodes = valves.reduce(into: [String: Valve]()) {
+//        $0[$1.id] = $1
+//    }
+//    let start = valves[0]
+//    var cache: [Cache: Int] = [:]
+//    print(navigate(valveId: start.id, valves: nodes, open: [], depth: 33, cache: &cache))
+//    print(otherSolve(nodes: nodes, start: start.id))
+//    return 1651
+//}
+//
+//func solve2(input: String) -> Int {
+//    let valves = parse(input: input)
+//    let nodes = valves.reduce(into: [String: Valve]()) {
+//        $0[$1.id] = $1
+//    }
+//    let start = valves[0]
+//    var cache: [Cache2: Int] = [:]
+//    return navigate2(valveId: start.id, elephantId: start.id, valves: nodes, open: [], depth: 25, cache: &cache)
+//}
 
 struct State: Hashable {
     let nodeId: String

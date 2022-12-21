@@ -8,45 +8,25 @@ struct Valve {
 
 private func getDistancesToValves(valvesDict: [String: Valve]) -> [String: [String: Int]] {
     let valves = Array(valvesDict.values)
-    var idToIndex: [String: Int] = [:]
-    var indexToId: [Int: String] = [:]
-    for index in 0..<valves.count {
-        idToIndex[valves[index].id] = index
-        indexToId[index] = valves[index].id
-    }
-    var distances = Array(
-        repeating: Array(repeating: 9999, count: valves.count),
-        count: valves.count
-    )
+    let valveIds = valves.map(\.id)
+    var result: [String: [String: Int]] = [:]
     for valve in valves {
-        let index = idToIndex[valve.id]!
-        distances[index][index] = 0
+        result[valve.id] = [valve.id: 0]
         for id in valve.next {
-            let jindex = idToIndex[id]!
-            distances[index][jindex] = 1
+            result[valve.id]![id] = 1
         }
     }
-    for k in 0..<valves.count {
-        for i in 0..<valves.count {
-            for j in 0..<valves.count {
-                if distances[i][j] > distances[i][k] + distances[k][j] {
-                    distances[i][j] = distances[i][k] + distances[k][j]
+    for k in valveIds {
+        for i in valveIds {
+            for j in valveIds {
+                let ij = result[i]![j] ?? 9999
+                let ik = result[i]![k] ?? 9999
+                let kj = result[k]![j] ?? 9999
+                if ij > ik + kj {
+                    result[i]![j] = ik + kj
                 }
             }
         }
-    }
-    var result: [String: [String: Int]] = [:]
-    for valve in valves {
-        let index = idToIndex[valve.id]!
-        var ids: [String: Int] = [:]
-        for i in 0..<valves.count {
-            let id = indexToId[i]!
-            if valvesDict[id]!.flow > 0 {
-                let distance = distances[index][i]
-                ids[id] = distance
-            }
-        }
-        result[valve.id] = ids
     }
     return result
 }

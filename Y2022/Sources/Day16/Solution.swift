@@ -51,13 +51,33 @@ private func getDistancesToValves(valvesDict: [String: Valve]) -> [String: [Stri
     return result
 }
 
+struct State: Hashable {
+    let player: String
+    let player2: String?
+    let depth: Int
+    let depth2: Int?
+    let open: Set<String>
+
+    init(player: String, player2: String? = nil, depth: Int, depth2: Int? = nil, open: Set<String>) {
+        self.player = player
+        self.player2 = player2
+        self.depth = depth
+        self.depth2 = depth2
+        self.open = open
+    }
+}
+
 private func navigate(
     valve: Valve,
     valves: [String: Valve],
     distances: [String: [String: Int]],
     open: Set<String> = [],
-    depth: Int = 29
+    depth: Int = 29,
+    cache: inout [State: Int]
 ) -> Int {
+    if let cached = cache[State(player: valve.id, depth: depth, open: open)] {
+        return cached
+    }
     if depth < 1 {
         return 0
     }
@@ -65,15 +85,20 @@ private func navigate(
     for other in valves.values where !open.contains(other.id) {
         let distance = distances[valve.id]![other.id]!
         let depth = depth - distance
+        if depth < 1 {
+            continue
+        }
         let flow = other.flow * depth + navigate(
             valve: other,
             valves: valves,
             distances: distances,
             open: open.union([other.id]),
-            depth: depth - 1
+            depth: depth - 1,
+            cache: &cache
         )
         result = max(result, flow)
     }
+    cache[State(player: valve.id, depth: depth, open: open)] = result
     return result
 }
 
@@ -84,8 +109,15 @@ private func navigate(
     distances: [String: [String: Int]],
     open: Set<String> = [],
     humanDepth: Int = 25,
-    elephantDepth: Int = 25
+    elephantDepth: Int = 25,
+    cache: inout [State: Int]
 ) -> Int {
+    if let cached = cache[State(player: human.id, player2: elephant.id, depth: humanDepth, depth2: elephantDepth, open: open)] {
+        return cached
+    }
+    if let cached = cache[State(player: elephant.id, player2: human.id, depth: elephantDepth, depth2: humanDepth, open: open)] {
+        return cached
+    }
     if humanDepth < 1, elephantDepth < 1 {
         return 0
     }
@@ -94,6 +126,9 @@ private func navigate(
         for other in valves.values where !open.contains(other.id) {
             let distance = distances[elephant.id]![other.id]!
             let depth = elephantDepth - distance
+            if depth < 1 {
+                continue
+            }
             let flow = other.flow * depth + navigate(
                 human: human,
                 elephant: other,
@@ -101,7 +136,8 @@ private func navigate(
                 distances: distances,
                 open: open.union([other.id]),
                 humanDepth: humanDepth,
-                elephantDepth: depth - 1
+                elephantDepth: depth - 1,
+                cache: &cache
             )
             result = max(result, flow)
         }
@@ -109,6 +145,9 @@ private func navigate(
         for other in valves.values where !open.contains(other.id) {
             let distance = distances[human.id]![other.id]!
             let depth = humanDepth - distance
+            if depth < 1 {
+                continue
+            }
             let flow = other.flow * depth + navigate(
                 human: other,
                 elephant: elephant,
@@ -116,11 +155,14 @@ private func navigate(
                 distances: distances,
                 open: open.union([other.id]),
                 humanDepth: depth - 1,
-                elephantDepth: elephantDepth
+                elephantDepth: elephantDepth,
+                cache: &cache
             )
             result = max(result, flow)
         }
     }
+    cache[State(player: human.id, player2: elephant.id, depth: humanDepth, depth2: elephantDepth, open: open)] = result
+    cache[State(player: elephant.id, player2: human.id, depth: elephantDepth, depth2: humanDepth, open: open)] = result
     return result
 }
 
@@ -132,7 +174,8 @@ func solve1(input: String) -> Int {
     let distances = getDistancesToValves(valvesDict: nodes)
     let first = nodes["AA"]!
     let filtered = nodes.filter { $0.value.flow > 0 }
-    return navigate(valve: first, valves: filtered, distances: distances)
+    var cache: [State: Int] = [:]
+    return navigate(valve: first, valves: filtered, distances: distances, cache: &cache)
 }
 
 func solve2(input: String) -> Int {
@@ -143,5 +186,6 @@ func solve2(input: String) -> Int {
     let distances = getDistancesToValves(valvesDict: nodes)
     let first = nodes["AA"]!
     let filtered = nodes.filter { $0.value.flow > 0 }
-    return navigate(human: first, elephant: first, valves: filtered, distances: distances)
+    var cache: [State: Int] = [:]
+    return navigate(human: first, elephant: first, valves: filtered, distances: distances, cache: &cache)
 }

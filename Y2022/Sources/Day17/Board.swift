@@ -31,7 +31,8 @@ struct Board {
         return true
     }
 
-    mutating func settle(piece: Piece, at position: Position) {
+    mutating func settle(piece: Piece, at position: Position) -> Int {
+        let result = max(getTopPoint() - position.y, 0)
         for y in position.y..<(position.y + piece.shapes.count) {
             for x in position.x..<(position.x + piece.shapes[y - position.y].count) {
                 if piece.shapes[y - position.y][x - position.x] == .rock || grid[y][x] == .rock {
@@ -42,6 +43,7 @@ struct Board {
             }
         }
         trimExtraLines()
+        return result
     }
 
     private mutating func trimExtraLines() {
@@ -58,15 +60,30 @@ struct Board {
         }
     }
 
-    func getHeight() -> Int {
-        var count = 0
-        for line in grid.reversed() {
-            if line != Array(repeating: .empty, count: 7) {
-                count += 1
-            } else {
+    func getExtraHeightPerColumn() -> [Int] {
+        var counts: [Int?] = Array(repeating: nil, count: 7)
+        for (index, line) in grid.enumerated() {
+            if line == Array(repeating: .empty, count: 7) {
+                continue
+            }
+            for i in 0..<line.count {
+                if line[i] == .rock, counts[i] == nil {
+                    counts[i] = index
+                }
+            }
+            if !counts.contains(nil) {
                 break
             }
         }
-        return count - 1
+        return counts.compactMap { $0 }
+    }
+
+    private func getTopPoint() -> Int {
+        for (index, line) in grid.enumerated() {
+            if line.contains(.rock) {
+                return index
+            }
+        }
+        fatalError()
     }
 }

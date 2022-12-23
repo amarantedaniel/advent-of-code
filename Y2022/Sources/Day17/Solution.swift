@@ -43,7 +43,13 @@ private func getDirection(at index: Int, directions: [Direction]) -> Direction {
     directions[index % directions.count]
 }
 
-func solve1(input: String) -> Int {
+struct State: Hashable {
+    let pieceIndex: Int
+    let directionIndex: Int
+    let heights: [Int]
+}
+
+func solve(input: String, goal: Int) -> Int {
     let directions = parse(input: input)
     let pieces: [Piece] = [.horizontal, .cross, .corner, .vertical, .square]
     var directionIndex = 0
@@ -52,9 +58,29 @@ func solve1(input: String) -> Int {
     var board = Board()
     var position = Position(x: 2, y: 0)
     board.reserveSpace(for: piece)
+    var states: [State: (Int, Int)] = [:]
+    var height = 0
     while true {
-        if pieceIndex == 2022 {
-            return board.getHeight()
+        if position.y == 0 {
+            let state = State(
+                pieceIndex: pieceIndex % pieces.count,
+                directionIndex: directionIndex % directions.count,
+                heights: board.getExtraHeightPerColumn()
+            )
+            if let (previousHeight, previousPieceIndex) = states[state] {
+                let extraHeightSinceLast = height - previousHeight
+                let extraPiecesSinceLast = pieceIndex - previousPieceIndex
+                let howManyLoopsCanFit = (goal - pieceIndex) / extraPiecesSinceLast
+                if pieceIndex + extraPiecesSinceLast < goal {
+                    pieceIndex += extraPiecesSinceLast * (howManyLoopsCanFit - 1)
+                    height += extraHeightSinceLast * (howManyLoopsCanFit - 1)
+                    continue
+                }
+            }
+            states[state] = (height, pieceIndex)
+        }
+        if pieceIndex == goal {
+            return height
         }
         let direction = getDirection(at: directionIndex, directions: directions)
         var attempt = position.move(direction: direction)
@@ -65,7 +91,7 @@ func solve1(input: String) -> Int {
         if board.canMove(position: attempt, piece: piece) {
             position = attempt
         } else {
-            board.settle(piece: piece, at: position)
+            height += board.settle(piece: piece, at: position)
             pieceIndex += 1
             piece = getPiece(at: pieceIndex, pieces: pieces)
             board.reserveSpace(for: piece)
@@ -73,8 +99,4 @@ func solve1(input: String) -> Int {
         }
         directionIndex += 1
     }
-}
-
-func solve2(input: String) -> Int {
-    0
 }

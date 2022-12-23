@@ -9,17 +9,49 @@ func format(maze: [[Square]], player: Player? = nil) -> String {
         .map { $0.map { String($0.rawValue) }.joined() }
         .joined(separator: "\n")
 }
-//
-//func format(cube: Cube) -> String {
-//    let size = cube.top.count
-//    let top = format(maze: cube.top)
-//    let bottom = format(maze: cube.bottom)
-//    let right = format(maze: cube.right)
-//    let left = format(maze: cube.left)
-//    let front = format(maze: cube.front)
-//    let back = format(maze: cube.back)
-//    let empty = format(maze: Array(repeating: Array(repeating: Square.player, count: size), count: size))
-//    return """
-//    \(empty)\(top)\(empty)
-//    """
-//}
+
+func format(cube: Cube, player: Player) -> String {
+    var result: [[Square]] = []
+    var top = cube.top
+    if player.grid == \.top {
+        top[player.position.y][player.position.x] = .player
+    }
+    var bottom = cube.bottom
+    if player.grid == \.bottom {
+        bottom[player.position.y][player.position.x] = .player
+    }
+    var right = cube.right
+    if player.grid == \.right {
+        right[player.position.y][player.position.x] = .player
+    }
+    var left = cube.left
+    if player.grid == \.left {
+        left[player.position.y][player.position.x] = .player
+    }
+    var front = cube.front
+    if player.grid == \.front {
+        front[player.position.y][player.position.x] = .player
+    }
+    var back = cube.back
+    if player.grid == \.back {
+        back[player.position.y][player.position.x] = .player
+    }
+    let size = cube.top.count
+    let empties = Array(repeating: Square.outside, count: size)
+    for line in top {
+        result.append(empties + line)
+    }
+    for i in 0..<size {
+        result.append(left[i] + front[i] + right[i])
+    }
+    for line in bottom {
+        result.append(empties + line)
+    }
+    for line in back {
+        result.append(empties + line)
+    }
+    let string = result
+        .map { $0.map { String($0.rawValue) }.joined() }
+        .joined(separator: "\n")
+    return string + "\n"
+}

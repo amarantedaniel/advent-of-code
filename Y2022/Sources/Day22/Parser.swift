@@ -1,14 +1,5 @@
 import Foundation
 
-struct Cube {
-    let top: [[Square]]
-    let bottom: [[Square]]
-    let front: [[Square]]
-    let back: [[Square]]
-    let left: [[Square]]
-    let right: [[Square]]
-}
-
 enum Parser {
     static func parseCube(input: String) -> (Cube, [Move]) {
         let components = input.components(separatedBy: "\n\n")

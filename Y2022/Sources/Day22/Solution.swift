@@ -88,14 +88,6 @@ struct Player {
     }
 }
 
-private func format(maze: [[Square]], player: Player) -> String {
-    var maze = maze
-    maze[player.position.y][player.position.x] = .player
-    return maze
-        .map { $0.map { String($0.rawValue) }.joined() }
-        .joined(separator: "\n")
-}
-
 private func startingPosition(in maze: [[Square]]) -> Position {
     let x = maze[0].firstIndex { $0 == .pathway }!
     return Position(x: x, y: 0)
@@ -151,6 +143,11 @@ func solve1(input: String) -> Int {
     return player.calculate()
 }
 
+
+
 func solve2(input: String) -> Int {
-    0
+//    let (cube, moves) = Parser.parseCube(input: input)
+//    let (maze, moves) = Parser.parse(input: input)
+//    print(moves)
+    return 0
 }

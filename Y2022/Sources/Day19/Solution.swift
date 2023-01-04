@@ -15,13 +15,8 @@ enum Mineral: String, CustomStringConvertible, Comparable {
     }
 }
 
-struct Cost {
-    let mineral: Mineral
-    let value: Int
-}
-
 struct Blueprint {
-    let prices: [Mineral: [Cost]]
+    let prices: [Mineral: [Mineral: Int]]
 }
 
 private func parse(input: String) -> [Blueprint] {
@@ -37,20 +32,23 @@ private func parse(input: String) -> [Blueprint] {
         }
         return Blueprint(
             prices: [
-                .ore: [Cost(mineral: .ore, value: numbers[0])],
-                .clay: [Cost(mineral: .ore, value: numbers[1])],
-                .obsidian: [Cost(mineral: .ore, value: numbers[2]), Cost(mineral: .clay, value: numbers[3])],
-                .geode: [Cost(mineral: .ore, value: numbers[4]), Cost(mineral: .obsidian, value: numbers[5])]
+                .ore: [.ore: numbers[0]],
+                .clay: [.ore: numbers[1]],
+                .obsidian: [.ore: numbers[2], .clay: numbers[3]],
+                .geode: [.ore: numbers[4], .obsidian: numbers[5]]
             ]
         )
     }
 }
 
-private func canPurchase(costs: [Cost], minerals: [Mineral: Int]) -> Bool {
-    for cost in costs {
-        if minerals[cost.mineral]! < cost.value {
+private func canPurchase(robot: Mineral, costs: [Mineral: Int], state: State, maximums: [Mineral: Int]) -> Bool {
+    for (mineral, price) in costs {
+        if state.minerals[mineral]! < price {
             return false
         }
+    }
+    if state.robots[robot]! >= maximums[robot]! {
+        return false
     }
     return true
 }
@@ -63,21 +61,33 @@ private func increment(robots: [Mineral: Int], minerals: [Mineral: Int]) -> [Min
     return minerals
 }
 
-private func buy(costs: [Cost], minerals: [Mineral: Int]) -> [Mineral: Int] {
+private func add(robot: Mineral, to robots: [Mineral: Int]) -> [Mineral: Int] {
+    var robots = robots
+    robots[robot] = robots[robot]! + 1
+    return robots
+}
+
+private func buy(costs: [Mineral: Int], minerals: [Mineral: Int]) -> [Mineral: Int] {
     var minerals = minerals
-    for cost in costs {
-        minerals[cost.mineral] = minerals[cost.mineral]! - cost.value
+    for (mineral, price) in costs {
+        minerals[mineral] = minerals[mineral]! - price
     }
     return minerals
+}
+
+private func buy(state: State, robot: Mineral, costs: [Mineral: Int]) -> State {
+    State(
+        robots: add(robot: robot, to: state.robots),
+        minerals: increment(robots: state.robots, minerals: buy(costs: costs, minerals: state.minerals))
+    )
 }
 
 struct State: Hashable, Equatable, CustomStringConvertible {
     let robots: [Mineral: Int]
     let minerals: [Mineral: Int]
-    let time: Int
 
     var description: String {
-        "Robots: \(robots), minerals: \(minerals), time: \(time)"
+        "Robots: \(robots), minerals: \(minerals)"
     }
 }
 
@@ -102,151 +112,64 @@ func solve1(input: String) async -> Int {
     return 0
 }
 
-func canBuy(state: State, robot: Mineral, costs: [Cost], maximums: [Mineral: Int]) -> Bool {
-    if robot == .ore, state.robots[.ore]! >= maximums[.ore]! {
-        return false
+func solve2(input: String) -> Int {
+    let blueprints = parse(input: input)
+    var result = 1
+    for blueprint in blueprints {
+        print("start blueprint")
+        result *= solve(blueprint: blueprint)
+        print("end blueprint")
     }
-
-    if robot == .clay, state.robots[.clay]! >= maximums[.clay]! {
-        return false
-    }
-
-    if robot == .obsidian, state.robots[.obsidian]! >= maximums[.obsidian]! {
-        return false
-    }
-
-    if costs.contains(where: { $0.mineral == .clay }), state.robots[.clay]! == 0 {
-        return false
-    }
-    if costs.contains(where: { $0.mineral == .obsidian }), state.robots[.obsidian]! == 0 {
-        return false
-    }
-    return true
-}
-
-func adding(robot: Mineral, to robots: [Mineral: Int]) -> [Mineral: Int] {
-    var robots = robots
-    robots[robot] = robots[robot]! + 1
-    return robots
-}
-
-func buy(state: State, robot: Mineral, costs: [Cost], maximums: [Mineral: Int]) -> State? {
-    guard canBuy(state: state, robot: robot, costs: costs, maximums: maximums) else { return nil }
-    let oreCost = costs.first(where: { $0.mineral == .ore })?.value ?? 0
-    let clayCost = costs.first(where: { $0.mineral == .clay })?.value ?? 0
-    let obsidianCost = costs.first(where: { $0.mineral == .obsidian })?.value ?? 0
-    let missingOre = oreCost - state.minerals[.ore]!
-    let missingClay = clayCost - state.minerals[.clay]!
-    let missingObsidian = obsidianCost - state.minerals[.obsidian]!
-    let daysToFarmOre = Int((Double(missingOre) / Double(state.robots[.ore]!)).rounded(.up))
-    let daysToFarmClay = state.robots[.clay]! == 0 ? 0 : Int((Double(missingClay) / Double(state.robots[.clay]!)).rounded(.up))
-    let daysToFarmObsidian = state.robots[.obsidian]! == 0 ? 0 : Int((Double(missingObsidian) / Double(state.robots[.obsidian]!)).rounded(.up))
-    let time = max(daysToFarmOre, max(daysToFarmClay, daysToFarmObsidian)) + 1
-    let minerals: [Mineral: Int] = [
-        .ore: state.minerals[.ore]! + (time * state.robots[.ore]!) - oreCost,
-        .clay: state.minerals[.clay]! + (time * state.robots[.clay]!) - clayCost,
-        .obsidian: state.minerals[.obsidian]! + (time * state.robots[.obsidian]!) - obsidianCost,
-        .geode: time * state.robots[.geode]!
-    ]
-    return State(
-        robots: adding(robot: robot, to: state.robots),
-        minerals: minerals,
-        time: state.time + time
-    )
-}
-
-func calculateMaxGeodes(from state: State, maxTime: Int) -> Int {
-    let next = state.robots[.geode]! * (maxTime - state.time)
-    return state.minerals[.geode]! + next
-}
-
-func solve(blueprint: Blueprint) -> Int {
-    let costs = blueprint.prices.values.flatMap { $0 }
-    let maxOre = costs.filter { $0.mineral == .ore }.max(by: { $0.value < $1.value })!.value
-    let maxClay = costs.filter { $0.mineral == .clay }.max(by: { $0.value < $1.value })!.value
-    let maxObsidian = costs.filter { $0.mineral == .obsidian }.max(by: { $0.value < $1.value })!.value
-    let maxes: [Mineral: Int] = [.ore: maxOre, .clay: maxClay, .obsidian: maxObsidian, .geode: Int.max]
-
-    var visited: Set<State> = []
-    var queue: [State] = [
-        .init(
-            robots: [.ore: 1, .clay: 0, .geode: 0, .obsidian: 0],
-            minerals: [.ore: 0, .clay: 0, .geode: 0, .obsidian: 0],
-            time: 0
-        )
-    ]
-    var result = 0
-    var count = 0
-    while !queue.isEmpty {
-        let state = queue.removeFirst()
-        if state.time > 24 {
-            continue
-        }
-        result = max(result, calculateMaxGeodes(from: state, maxTime: 24))
-        if visited.contains(state) {
-            continue
-        }
-        visited.insert(state)
-        for (robot, costs) in blueprint.prices {
-            if let new = buy(state: state, robot: robot, costs: costs, maximums: maxes) {
-                queue.append(new)
-            }
-        }
-        count += 1
-    }
-    print(result)
+    print("result: \(result)")
     return 0
 }
 
-//
-// func solve(blueprint: Blueprint) -> Int {
-//    var visited: Set<State> = []
-//    var queue: [State] = [
-//        .init(
-//            robots: [.ore: 1, .clay: 0, .geode: 0, .obsidian: 0],
-//            minerals: [.ore: 0, .clay: 0, .geode: 0, .obsidian: 0],
-//            time: 0
-//        )
-//    ]
-//    let costs = blueprint.prices.values.flatMap { $0 }
-//    let maxOre = costs.filter { $0.mineral == .ore }.max(by: { $0.value < $1.value })!.value
-//    let maxClay = costs.filter { $0.mineral == .clay }.max(by: { $0.value < $1.value })!.value
-//    let maxObsidian = costs.filter { $0.mineral == .obsidian }.max(by: { $0.value < $1.value })!.value
-//    let maxes: [Mineral: Int] = [.ore: maxOre, .clay: maxClay, .obsidian: maxObsidian, .geode: Int.max]
-//    var result = 0
-//    while !queue.isEmpty {
-//        let state = queue.removeFirst()
-//        result = max(result, state.minerals[.geode]!)
-////        print(state.time)
-////        print(state)
-//        if state.time >= 24 {
-//            continue
-//        }
-//        if visited.contains(state) {
-//            continue
-//        }
-//        visited.insert(state)
-//        queue.append(
-//            State(robots: state.robots, minerals: increment(robots: state.robots, minerals: state.minerals), time: state.time + 1)
-//        )
-//        for (robot, costs) in blueprint.prices where canPurchase(costs: costs, minerals: state.minerals) {
-//            if state.robots[robot]! >= maxes[robot]! {
-//                continue
-//            }
-//            let newMinerals = buy(costs: costs, minerals: state.minerals)
-//            var newRobots = state.robots
-//            newRobots[robot] = newRobots[robot]! + 1
-//            let possibleNextState = State(
-//                robots: newRobots,
-//                minerals: increment(robots: state.robots, minerals: newMinerals),
-//                time: state.time + 1
-//            )
-//            queue.append(possibleNextState)
-//        }
-//    }
-//    return result
-// }
+private func getMaxCost(in blueprint: Blueprint, for mineral: Mineral) -> Int {
+    blueprint.prices.values.compactMap { $0[mineral] }.max()!
+}
 
-func solve2(input: String) -> Int {
-    0
+func solve(blueprint: Blueprint) -> Int {
+    var visited: Set<State> = []
+    var rounds: [Set<State>] = [[
+        .init(
+            robots: [.ore: 1, .clay: 0, .geode: 0, .obsidian: 0],
+            minerals: [.ore: 0, .clay: 0, .geode: 0, .obsidian: 0]
+        )
+    ]]
+    let maximums: [Mineral: Int] = [
+        .ore: getMaxCost(in: blueprint, for: .ore),
+        .clay: getMaxCost(in: blueprint, for: .clay),
+        .obsidian: getMaxCost(in: blueprint, for: .obsidian),
+        .geode: Int.max
+    ]
+    var minute = 0
+    while minute < 24 {
+        let start = DispatchTime.now()
+        let round = rounds.removeFirst()
+        print("minute: \(minute)")
+        print("states: \(round.count)")
+        var nextRound: Set<State> = []
+        for state in round where !visited.contains(state) {
+            visited.insert(state)
+            nextRound.insert(
+                State(robots: state.robots, minerals: increment(robots: state.robots, minerals: state.minerals))
+            )
+            for (robot, costs) in blueprint.prices {
+                if canPurchase(robot: robot, costs: costs, state: state, maximums: maximums) {
+                    nextRound.insert(buy(state: state, robot: robot, costs: costs))
+                }
+            }
+        }
+        rounds.append(nextRound)
+        minute += 1
+        let end = DispatchTime.now()
+        let nanoTime = end.uptimeNanoseconds - start.uptimeNanoseconds
+        let timeInterval = Int(Double(nanoTime) / 1_000_000_000)
+        print("Time to evaluate: \(timeInterval) seconds")
+    }
+    let round = rounds.removeFirst()
+    let result = round
+        .max { $0.minerals[.geode]! < $1.minerals[.geode]! }!.minerals[.geode]!
+    print("partial: \(result)")
+    return result
 }

@@ -91,35 +91,29 @@ struct State: Hashable, Equatable, CustomStringConvertible {
 @available(macOS 10.15, *)
 func solve1(input: String) async -> Int {
     let blueprints = parse(input: input)
-//    let result = await withTaskGroup(of: Int.self) { taskGroup in
-//        for (index, blueprint) in blueprints.enumerated() {
-//            taskGroup.addTask {
-//                solve(blueprint: blueprint) * (index + 1)
-//            }
-//        }
-//        return await taskGroup.reduce(0, +)
-//    }
-    var result = 0
-    for (index, blueprint) in blueprints.enumerated() {
-        print("start blueprint")
-        result += solve(blueprint: blueprint, maxTime: 24) * (index + 1)
-        print("end blueprint")
+    let result = await withTaskGroup(of: Int.self) { taskGroup in
+        for (index, blueprint) in blueprints.enumerated() {
+            taskGroup.addTask {
+                solve(blueprint: blueprint, maxTime: 24) * (index + 1)
+            }
+        }
+        return await taskGroup.reduce(0, +)
     }
-    print("result: \(result)")
-    return 0
+    return result
 }
 
-func solve2(input: String) -> Int {
+@available(macOS 10.15, *)
+func solve2(input: String) async -> Int {
     let blueprints = parse(input: input).prefix(3)
-    print(blueprints)
-    var result = 1
-    for blueprint in blueprints {
-        print("start blueprint")
-        result *= solve(blueprint: blueprint, maxTime: 32)
-        print("end blueprint")
+    let result = await withTaskGroup(of: Int.self) { taskGroup in
+        for blueprint in blueprints {
+            taskGroup.addTask {
+                solve(blueprint: blueprint, maxTime: 32)
+            }
+        }
+        return await taskGroup.reduce(1, *)
     }
-    print("result: \(result)")
-    return 0
+    return result
 }
 
 private func getMaxCost(in blueprint: Blueprint, for mineral: Mineral) -> Int {
@@ -127,7 +121,10 @@ private func getMaxCost(in blueprint: Blueprint, for mineral: Mineral) -> Int {
 }
 
 private func canBuyAnyMineral(state: State, maximums: [Mineral: Int]) -> Bool {
-    state.minerals[.ore]! >= maximums[.ore]! && state.minerals[.clay]! >= maximums[.clay]! && state.minerals[.obsidian]! >= maximums[.obsidian]!
+    let canBuyMaximumOre = state.minerals[.ore]! >= maximums[.ore]!
+    let canBuyMaximumClay = state.robots[.clay]! == 0 || state.minerals[.clay]! >= maximums[.clay]!
+    let canBuyMaximumObsidian = state.robots[.obsidian]! == 0 || state.minerals[.obsidian]! >= maximums[.obsidian]!
+    return canBuyMaximumOre && canBuyMaximumClay && canBuyMaximumObsidian
 }
 
 private func canStillWin(with state: State, best: Int, timeRemaining: Int) -> Bool {
@@ -155,10 +152,7 @@ func solve(blueprint: Blueprint, maxTime: Int) -> Int {
     var minute = 0
     var result = 0
     while minute < maxTime {
-        let start = DispatchTime.now()
         let round = rounds.removeFirst()
-        print("minute: \(minute)")
-        print("states: \(round.count)")
         var nextRound: Set<State> = []
         for state in round where !visited.contains(state) {
             visited.insert(state)
@@ -180,14 +174,9 @@ func solve(blueprint: Blueprint, maxTime: Int) -> Int {
         }
         rounds.append(nextRound)
         minute += 1
-        let end = DispatchTime.now()
-        let nanoTime = end.uptimeNanoseconds - start.uptimeNanoseconds
-        let timeInterval = Int(Double(nanoTime) / 1_000_000_000)
-        print("Time to evaluate: \(timeInterval) seconds")
     }
     let round = rounds.removeFirst()
     result = round
         .max { $0.minerals[.geode]! < $1.minerals[.geode]! }!.minerals[.geode]!
-    print("partial: \(result)")
     return result
 }

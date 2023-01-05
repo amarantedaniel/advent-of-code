@@ -6,12 +6,13 @@ class SolutionTests: XCTestCase {
         let path = Bundle.module.path(forResource: "large", ofType: "txt")!
         let input = try! String(contentsOfFile: path, encoding: .utf8)
         let result = await solve1(input: input)
-        XCTAssertEqual(result, 0)
+        XCTAssertEqual(result, 1427)
     }
 
-    func test_solve2() {
+    func test_solve2() async {
         let path = Bundle.module.path(forResource: "large", ofType: "txt")!
         let input = try! String(contentsOfFile: path, encoding: .utf8)
-        XCTAssertEqual(solve2(input: input), 0)
+        let result = await solve2(input: input)
+        XCTAssertEqual(result, 4400)
     }
 }

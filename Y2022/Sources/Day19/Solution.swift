@@ -47,10 +47,7 @@ private func canPurchase(robot: Mineral, costs: [Mineral: Int], state: State, ma
             return false
         }
     }
-    if state.robots[robot]! >= maximums[robot]! {
-        return false
-    }
-    return true
+    return state.robots[robot]! < maximums[robot]!
 }
 
 private func increment(robots: [Mineral: Int], minerals: [Mineral: Int]) -> [Mineral: Int] {
@@ -105,7 +102,7 @@ func solve1(input: String) async -> Int {
     var result = 0
     for (index, blueprint) in blueprints.enumerated() {
         print("start blueprint")
-        result += solve(blueprint: blueprint) * (index + 1)
+        result += solve(blueprint: blueprint, maxTime: 24) * (index + 1)
         print("end blueprint")
     }
     print("result: \(result)")
@@ -113,11 +110,12 @@ func solve1(input: String) async -> Int {
 }
 
 func solve2(input: String) -> Int {
-    let blueprints = parse(input: input)
+    let blueprints = parse(input: input).prefix(3)
+    print(blueprints)
     var result = 1
     for blueprint in blueprints {
         print("start blueprint")
-        result *= solve(blueprint: blueprint)
+        result *= solve(blueprint: blueprint, maxTime: 32)
         print("end blueprint")
     }
     print("result: \(result)")
@@ -128,7 +126,19 @@ private func getMaxCost(in blueprint: Blueprint, for mineral: Mineral) -> Int {
     blueprint.prices.values.compactMap { $0[mineral] }.max()!
 }
 
-func solve(blueprint: Blueprint) -> Int {
+private func canBuyAnyMineral(state: State, maximums: [Mineral: Int]) -> Bool {
+    state.minerals[.ore]! >= maximums[.ore]! && state.minerals[.clay]! >= maximums[.clay]! && state.minerals[.obsidian]! >= maximums[.obsidian]!
+}
+
+private func canStillWin(with state: State, best: Int, timeRemaining: Int) -> Bool {
+    let robotCount = state.robots[.geode]!
+    let current = state.minerals[.geode]!
+    let extraRobots = timeRemaining
+    let expected = current + (robotCount + extraRobots) * timeRemaining
+    return expected > best
+}
+
+func solve(blueprint: Blueprint, maxTime: Int) -> Int {
     var visited: Set<State> = []
     var rounds: [Set<State>] = [[
         .init(
@@ -143,7 +153,8 @@ func solve(blueprint: Blueprint) -> Int {
         .geode: Int.max
     ]
     var minute = 0
-    while minute < 24 {
+    var result = 0
+    while minute < maxTime {
         let start = DispatchTime.now()
         let round = rounds.removeFirst()
         print("minute: \(minute)")
@@ -151,12 +162,19 @@ func solve(blueprint: Blueprint) -> Int {
         var nextRound: Set<State> = []
         for state in round where !visited.contains(state) {
             visited.insert(state)
-            nextRound.insert(
-                State(robots: state.robots, minerals: increment(robots: state.robots, minerals: state.minerals))
-            )
+            if !canStillWin(with: state, best: result, timeRemaining: maxTime - minute) {
+                continue
+            }
+            if !canBuyAnyMineral(state: state, maximums: maximums) {
+                nextRound.insert(
+                    State(robots: state.robots, minerals: increment(robots: state.robots, minerals: state.minerals))
+                )
+            }
             for (robot, costs) in blueprint.prices {
                 if canPurchase(robot: robot, costs: costs, state: state, maximums: maximums) {
-                    nextRound.insert(buy(state: state, robot: robot, costs: costs))
+                    let newState = buy(state: state, robot: robot, costs: costs)
+                    result = max(result, newState.minerals[.geode]!)
+                    nextRound.insert(newState)
                 }
             }
         }
@@ -168,7 +186,7 @@ func solve(blueprint: Blueprint) -> Int {
         print("Time to evaluate: \(timeInterval) seconds")
     }
     let round = rounds.removeFirst()
-    let result = round
+    result = round
         .max { $0.minerals[.geode]! < $1.minerals[.geode]! }!.minerals[.geode]!
     print("partial: \(result)")
     return result

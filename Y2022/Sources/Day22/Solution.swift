@@ -1,23 +1,5 @@
 import Foundation
 
-struct Cube {
-    let top: [[Square]]
-    let bottom: [[Square]]
-    let front: [[Square]]
-    let back: [[Square]]
-    let left: [[Square]]
-    let right: [[Square]]
-
-    func nextGrid(keyPath: KeyPath<Cube, [[Square]]>, facing: Facing) -> (KeyPath<Cube, [[Square]]>, Facing) {
-        switch (keyPath, facing) {
-        case (\.top, .right):
-            return (\.right, .down)
-        default:
-            fatalError()
-        }
-    }
-}
-
 enum Square: Character {
     case outside = " "
     case wall = "#"
@@ -98,12 +80,10 @@ struct Position {
 struct Player {
     let position: Position
     let facing: Facing
-    let grid: KeyPath<Cube, [[Square]]>?
 
-    init(position: Position, facing: Facing, grid: KeyPath<Cube, [[Square]]>? = nil) {
+    init(position: Position, facing: Facing) {
         self.position = position
         self.facing = facing
-        self.grid = grid
     }
 
     func calculate() -> Int {
@@ -159,56 +139,6 @@ private func perform(move: Move, player: Player, maze: [[Square]]) -> Player {
     }
 }
 
-private func perform2(move: Move, player: Player, cube: Cube) -> Player {
-    switch move {
-    case .walk(let steps):
-        var keyPath = player.grid!
-        var facing = player.facing
-        var maze = cube[keyPath: keyPath]
-        var position = player.position
-        let vector = player.facing.vector
-        for _ in 0 ..< steps {
-            var attempt = Position(x: position.x + vector.x, y: position.y + vector.y)
-            switch player.facing {
-            case .left:
-                break
-//                if attempt.x < 0 || maze[attempt.y][attempt.x] == .outside {
-//                    attempt = Position(x: maze[attempt.y].count - 1, y: attempt.y)
-//                }
-            case .right:
-                if attempt.x > maze[attempt.y].count - 1 {
-                    let (newKeyPath, newFacing) = cube.nextGrid(keyPath: keyPath, facing: player.facing)
-                    keyPath = newKeyPath
-                    maze = cube[keyPath: keyPath]
-                    if newFacing == .down {
-                        attempt = Position(x: attempt.y, y: 0)
-                    }
-                    facing = newFacing
-                }
-            case .up:
-                break
-//                if attempt.y < 0 || maze[attempt.y][attempt.x] == .outside {
-//                    attempt = Position(x: attempt.x, y: maze.count - 1)
-//                }
-            case .down:
-                break
-//                if attempt.y > maze.count - 1 || maze[attempt.y][attempt.x] == .outside {
-//                    attempt = Position(x: attempt.x, y: 0)
-//                }
-            }
-            if maze[attempt.y][attempt.x] == .wall {
-                break
-            }
-            position = attempt
-        }
-        return Player(position: position, facing: player.facing, grid: keyPath)
-    case .right:
-        return Player(position: player.position, facing: player.facing.rotatingRight(), grid: player.grid)
-    case .left:
-        return Player(position: player.position, facing: player.facing.rotatingLeft(), grid: player.grid)
-    }
-}
-
 func solve1(input: String) -> Int {
     let (maze, moves) = Parser.parse(input: input)
     var player = Player(position: startingPosition(in: maze), facing: .right)
@@ -219,17 +149,5 @@ func solve1(input: String) -> Int {
 }
 
 func solve2(input: String) -> Int {
-    let (cube, _) = Parser.parseCube(input: input)
-    var player = Player(position: startingPosition(in: cube.left), facing: .right, grid: \.top)
-    let moves: [Move] = [.walk(2), .right, .walk(1), .left, .walk(2)]
-
-    print(format(cube: cube, player: player))
-    for move in moves {
-        print("move: \(move)")
-        player = perform2(move: move, player: player, cube: cube)
-        print(format(cube: cube, player: player))
-    }
-//    let (maze, moves) = Parser.parse(input: input)
-//    print(moves)
     return 0
 }

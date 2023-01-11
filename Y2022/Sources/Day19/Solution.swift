@@ -79,19 +79,15 @@ private func buy(state: State, robot: Mineral, costs: [Mineral: Int]) -> State {
     )
 }
 
-struct State: Hashable, Equatable, CustomStringConvertible {
+struct State: Hashable {
     let robots: [Mineral: Int]
     let minerals: [Mineral: Int]
-
-    var description: String {
-        "Robots: \(robots), minerals: \(minerals)"
-    }
 }
 
 @available(macOS 10.15, *)
 func solve1(input: String) async -> Int {
     let blueprints = parse(input: input)
-    let result = await withTaskGroup(of: Int.self) { taskGroup in
+    return await withTaskGroup(of: Int.self) { taskGroup in
         for (index, blueprint) in blueprints.enumerated() {
             taskGroup.addTask {
                 solve(blueprint: blueprint, maxTime: 24) * (index + 1)
@@ -99,13 +95,12 @@ func solve1(input: String) async -> Int {
         }
         return await taskGroup.reduce(0, +)
     }
-    return result
 }
 
 @available(macOS 10.15, *)
 func solve2(input: String) async -> Int {
     let blueprints = parse(input: input).prefix(3)
-    let result = await withTaskGroup(of: Int.self) { taskGroup in
+    return await withTaskGroup(of: Int.self) { taskGroup in
         for blueprint in blueprints {
             taskGroup.addTask {
                 solve(blueprint: blueprint, maxTime: 32)
@@ -113,7 +108,6 @@ func solve2(input: String) async -> Int {
         }
         return await taskGroup.reduce(1, *)
     }
-    return result
 }
 
 private func getMaxCost(in blueprint: Blueprint, for mineral: Mineral) -> Int {
@@ -151,12 +145,16 @@ func solve(blueprint: Blueprint, maxTime: Int) -> Int {
     ]
     var minute = 0
     var result = 0
-    while minute < maxTime {
+    while minute <= maxTime {
         let round = rounds.removeFirst()
         var nextRound: Set<State> = []
         for state in round where !visited.contains(state) {
+            result = max(result, state.minerals[.geode]!)
+            if minute == maxTime {
+                continue
+            }
             visited.insert(state)
-            if !canStillWin(with: state, best: result, timeRemaining: maxTime - minute) {
+            guard canStillWin(with: state, best: result, timeRemaining: maxTime - minute) else {
                 continue
             }
             if !canBuyAnyMineral(state: state, maximums: maximums) {
@@ -166,17 +164,12 @@ func solve(blueprint: Blueprint, maxTime: Int) -> Int {
             }
             for (robot, costs) in blueprint.prices {
                 if canPurchase(robot: robot, costs: costs, state: state, maximums: maximums) {
-                    let newState = buy(state: state, robot: robot, costs: costs)
-                    result = max(result, newState.minerals[.geode]!)
-                    nextRound.insert(newState)
+                    nextRound.insert(buy(state: state, robot: robot, costs: costs))
                 }
             }
         }
         rounds.append(nextRound)
         minute += 1
     }
-    let round = rounds.removeFirst()
-    result = round
-        .max { $0.minerals[.geode]! < $1.minerals[.geode]! }!.minerals[.geode]!
     return result
 }

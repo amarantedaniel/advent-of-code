@@ -1,3 +1,4 @@
+# swift
 .DS_Store
 .build
 /Packages
@@ -5,3 +6,10 @@
 xcuserdata/
 DerivedData/
 .swiftpm
+
+# rust
+debug/
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb

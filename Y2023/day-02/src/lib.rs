@@ -1,100 +1,80 @@
 use std::collections::HashMap;
+use std::cmp;
+
+struct Draw {
+    red: u32,
+    green: u32,
+    blue: u32,
+}
 
 pub fn solve_part1(input: &str) -> String {
-    let mut sum = 0;
-    for line in input.lines() {
-        let first = find_first_digit(line);
-        let last = find_last_digit(line);
-        sum += first * 10 + last;
-
+    let lines = input.lines();
+    let mut result = 0;
+    for (index, line) in lines.enumerate() {
+        let draws = parse_line(line);
+        if draws.into_iter().all(|draw| is_possible(draw)) {
+            result += index + 1;
+        }
     }
-    return sum.to_string();
+    return result.to_string();
+}
+
+fn is_possible(draw: Draw) -> bool {
+    return draw.red <= 12 && draw.green <= 13 && draw.blue <= 14;
 }
 
 pub fn solve_part2(input: &str) -> String {
-    let mut sum = 0;
-    for line in input.lines() {
-        let first = find_first_digit_or_spelled_out(line);
-        let last = find_last_digit_or_spelled_out(line);
-        sum += first * 10 + last;
-
+    let lines = input.lines();
+    let mut result = 0;
+    for line in lines {
+        result += get_product(parse_line(line));
     }
-    return sum.to_string();
+    return result.to_string();
 }
 
-fn find_first_digit(line: &str) -> u32 {
-    for character in line.chars() {
-        if let Some(digit) = character.to_digit(10) {
-            return digit;
-        }
-    }
-    return 0;
+fn get_product(draws: Vec<Draw>) -> u32 {
+    let minimum = draws
+        .into_iter()
+        .fold(Draw::zero(), |minimum, draw| 
+            Draw {
+                red: cmp::max(minimum.red, draw.red),
+                green: cmp::max(minimum.green, draw.green),
+                blue:cmp::max(minimum.blue, draw.blue)
+            }
+        );
+    return minimum.red * minimum.blue * minimum.green;
 }
 
-fn find_last_digit(line: &str) -> u32 {
-    for character in line.chars().rev() {
-        if let Some(digit) = character.to_digit(10) {
-            return digit;
-        }
-    }
-    return 0;
+fn parse_line(line: &str) -> Vec<Draw> {
+    let split = line.split(':').collect::<Vec<_>>();
+    return split[1]
+        .split(';')
+        .map(|draw| parse_draw(draw))
+        .collect::<Vec<_>>();
 }
 
-fn find_first_digit_or_spelled_out(line: &str) -> u32 {
-    for (index, character) in line.chars().enumerate() {
-        if let Some(digit) = character.to_digit(10) {
-            return digit;
-        }
-        if let Some(digit) = find_spelled_out_digit(line, index) {
-            return digit;
-        }
+fn parse_draw(draw: &str) -> Draw {
+    let color_counts = draw.split(',').collect::<Vec<_>>();
+    let mut map: HashMap<&str, u32> = HashMap::new();
+    for color_count in color_counts {
+        let split = color_count.trim().split(' ').collect::<Vec<_>>();
+        let count = split[0].parse::<u32>().unwrap();
+        let color = split[1];
+        map.insert(color, count);
     }
-    return 0;
+    return Draw::from_map(map);
 }
 
-fn find_last_digit_or_spelled_out(line: &str) -> u32 {
-    for (index, character) in line.chars().rev().enumerate() {
-        if let Some(digit) = character.to_digit(10) {
-            return digit;
-        }
-        if let Some(digit) = find_spelled_out_digit(line, line.len() - index - 1) {
-            return digit;
-        }
+impl Draw {
+    fn zero() -> Draw {
+        return Draw { red: 0, green: 0, blue: 0};
     }
-    return 0;
-}
 
-fn find_spelled_out_digit(line: &str, index: usize) -> Option<u32> {
-    let map = HashMap::from([
-        ("one".to_string(), 1),
-        ("two".to_string(), 2),
-        ("three".to_string(), 3),
-        ("four".to_string(), 4),
-        ("five".to_string(), 5),
-        ("six".to_string(), 6),
-        ("seven".to_string(), 7),
-        ("eight".to_string(), 8),
-        ("nine".to_string(), 9),
-        ("zero".to_string(), 0)
-    ]);
-
-    if line.len() - index >= 3 {
-        let substring = &line[index..index+3];
-        if let Some(digit) = map.get(&substring.to_string()) {
-            return Some(*digit);
-        }
-    } 
-    if line.len() - index >= 4 {
-        let substring = &line[index..index+4];
-        if let Some(digit) = map.get(&substring.to_string()) {
-            return Some(*digit);
+    fn from_map(map: HashMap<&str, u32>) -> Draw {
+        return Draw { 
+            red: *map.get("red").unwrap_or(&0), 
+            green: *map.get("green").unwrap_or(&0), 
+            blue: *map.get("blue").unwrap_or(&0)
         }
     }
-    if line.len() - index >= 5 {
-        let substring = &line[index..index+5];
-        if let Some(digit) = map.get(&substring.to_string()) {
-            return Some(*digit);
-        }
-    }
-    return None;
 }

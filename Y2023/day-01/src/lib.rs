@@ -78,23 +78,13 @@ fn find_spelled_out_digit(line: &str, index: usize) -> Option<u32> {
         ("zero".to_string(), 0)
     ]);
 
-    if line.len() - index >= 3 {
-        let substring = &line[index..index+3];
-        if let Some(digit) = map.get(&substring.to_string()) {
-            return Some(*digit);
-        }
-    } 
-    if line.len() - index >= 4 {
-        let substring = &line[index..index+4];
-        if let Some(digit) = map.get(&substring.to_string()) {
-            return Some(*digit);
-        }
-    }
-    if line.len() - index >= 5 {
-        let substring = &line[index..index+5];
-        if let Some(digit) = map.get(&substring.to_string()) {
-            return Some(*digit);
-        }
+    for length in 3..6 {
+        if line.len() - index >= length {
+            let substring = &line[index..index+length];
+            if let Some(digit) = map.get(&substring.to_string()) {
+                return Some(*digit);
+            }
+        } 
     }
     return None;
 }

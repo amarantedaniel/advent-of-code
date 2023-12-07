@@ -1,6 +1,12 @@
 use std::collections::HashMap;
 use std::cmp;
 
+#[derive(Debug)]
+struct GearNumber {
+    number: u32,
+    gear_index: (usize, usize)
+}
+
 pub fn solve_part1(input: &str) -> String {
     let matrix = parse_input(input);
     return find_part_numbers(&matrix).iter().sum::<u32>().to_string();
@@ -36,7 +42,7 @@ fn find_part_numbers(matrix: &Vec<Vec<char>>) -> Vec<u32> {
 
 fn read_part_number(matrix: &Vec<Vec<char>>, row: usize, start_index: usize, end_index: usize) -> Option<u32> {
     if (start_index..end_index).any(|z| has_symbols_around(matrix, row, z)) {
-        return matrix[row][start_index..end_index].iter().collect::<String>().parse::<u32>().ok();
+        return Some(read_number(&matrix[row][start_index..end_index]));
     }
     return None;
 }
@@ -72,12 +78,6 @@ pub fn solve_part2(input: &str) -> String {
     return sum.to_string();
 }
 
-#[derive(Debug)]
-struct GearNumber {
-    number: u32,
-    gear_index: (usize, usize)
-}
-
 fn find_gear_numbers(matrix: &Vec<Vec<char>>) -> Vec<GearNumber> {
     let mut start_index: Option<usize> =  None;
     let mut gear_numbers = Vec::new();
@@ -109,8 +109,8 @@ fn find_gear_numbers(matrix: &Vec<Vec<char>>) -> Vec<GearNumber> {
 fn read_gear_number(matrix: &Vec<Vec<char>>, row: usize, start_index: usize, end_index: usize) -> Option<GearNumber> {
     for z in start_index..end_index {
         if let Some(gear_index) = find_gear_index(matrix, row, z) {
-            let number = matrix[row][start_index..end_index].iter().collect::<String>().parse::<u32>().unwrap();
-            return Some(GearNumber { number: number, gear_index: gear_index });
+            let number = read_number(&matrix[row][start_index..end_index]);
+            return Some(GearNumber { number, gear_index });
         }
     }
     return None;
@@ -126,6 +126,10 @@ fn find_gear_index(matrix: &Vec<Vec<char>>, row: usize, column: usize) -> Option
         }
     }
     return None;
+}
+
+fn read_number(slice: &[char]) -> u32 {
+    return slice.iter().collect::<String>().parse::<u32>().unwrap();
 }
 
 fn parse_input(input: &str) -> Vec<Vec<char>> {

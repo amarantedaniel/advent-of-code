@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::cmp;
+use std::collections::HashMap;
 
 struct Draw {
     red: u32,
@@ -33,15 +33,11 @@ pub fn solve_part2(input: &str) -> String {
 }
 
 fn get_product(draws: Vec<Draw>) -> u32 {
-    let minimum = draws
-        .into_iter()
-        .fold(Draw::zero(), |minimum, draw| 
-            Draw {
-                red: cmp::max(minimum.red, draw.red),
-                green: cmp::max(minimum.green, draw.green),
-                blue: cmp::max(minimum.blue, draw.blue)
-            }
-        );
+    let minimum = draws.into_iter().fold(Draw::zero(), |minimum, draw| Draw {
+        red: cmp::max(minimum.red, draw.red),
+        green: cmp::max(minimum.green, draw.green),
+        blue: cmp::max(minimum.blue, draw.blue),
+    });
     return minimum.red * minimum.blue * minimum.green;
 }
 
@@ -67,14 +63,18 @@ fn parse_draw(draw: &str) -> Draw {
 
 impl Draw {
     fn zero() -> Draw {
-        return Draw { red: 0, green: 0, blue: 0};
+        return Draw {
+            red: 0,
+            green: 0,
+            blue: 0,
+        };
     }
 
     fn from_map(map: HashMap<&str, u32>) -> Draw {
-        return Draw { 
-            red: *map.get("red").unwrap_or(&0), 
-            green: *map.get("green").unwrap_or(&0), 
-            blue: *map.get("blue").unwrap_or(&0)
-        }
+        return Draw {
+            red: *map.get("red").unwrap_or(&0),
+            green: *map.get("green").unwrap_or(&0),
+            blue: *map.get("blue").unwrap_or(&0),
+        };
     }
 }

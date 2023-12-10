@@ -6,7 +6,6 @@ pub fn solve_part1(input: &str) -> String {
         let first = find_first_digit(line);
         let last = find_last_digit(line);
         sum += first * 10 + last;
-
     }
     return sum.to_string();
 }
@@ -35,7 +34,6 @@ pub fn solve_part2(input: &str) -> String {
         let first = find_first_digit_or_spelled_out(line);
         let last = find_last_digit_or_spelled_out(line);
         sum += first * 10 + last;
-
     }
     return sum.to_string();
 }
@@ -75,16 +73,16 @@ fn find_spelled_out_digit(line: &str, index: usize) -> Option<u32> {
         ("seven".to_string(), 7),
         ("eight".to_string(), 8),
         ("nine".to_string(), 9),
-        ("zero".to_string(), 0)
+        ("zero".to_string(), 0),
     ]);
 
     for length in 3..6 {
         if line.len() - index >= length {
-            let substring = &line[index..index+length];
+            let substring = &line[index..index + length];
             if let Some(digit) = map.get(&substring.to_string()) {
                 return Some(*digit);
             }
-        } 
+        }
     }
     return None;
 }

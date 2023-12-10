@@ -1,10 +1,10 @@
-use std::collections::HashMap;
 use std::cmp;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 struct GearNumber {
     number: u32,
-    gear_index: (usize, usize)
+    gear_index: (usize, usize),
 }
 
 pub fn solve_part1(input: &str) -> String {
@@ -13,7 +13,7 @@ pub fn solve_part1(input: &str) -> String {
 }
 
 fn find_part_numbers(matrix: &Vec<Vec<char>>) -> Vec<u32> {
-    let mut start_index: Option<usize> =  None;
+    let mut start_index: Option<usize> = None;
     let mut part_numbers = Vec::new();
     for i in 0..matrix.len() {
         for j in 0..matrix[i].len() {
@@ -40,7 +40,12 @@ fn find_part_numbers(matrix: &Vec<Vec<char>>) -> Vec<u32> {
     return part_numbers;
 }
 
-fn read_part_number(matrix: &Vec<Vec<char>>, row: usize, start_index: usize, end_index: usize) -> Option<u32> {
+fn read_part_number(
+    matrix: &Vec<Vec<char>>,
+    row: usize,
+    start_index: usize,
+    end_index: usize,
+) -> Option<u32> {
     if (start_index..end_index).any(|z| has_symbols_around(matrix, row, z)) {
         return Some(read_number(&matrix[row][start_index..end_index]));
     }
@@ -48,8 +53,8 @@ fn read_part_number(matrix: &Vec<Vec<char>>, row: usize, start_index: usize, end
 }
 
 fn has_symbols_around(matrix: &Vec<Vec<char>>, row: usize, column: usize) -> bool {
-    for ii in  row.saturating_sub(1)..cmp::min(row+2,  matrix.len()) {
-        for jj in column.saturating_sub(1)..cmp::min(column+2, matrix[row].len()) {
+    for ii in row.saturating_sub(1)..cmp::min(row + 2, matrix.len()) {
+        for jj in column.saturating_sub(1)..cmp::min(column + 2, matrix[row].len()) {
             if !matrix[ii][jj].is_digit(10) && matrix[ii][jj] != '.' {
                 return true;
             }
@@ -60,7 +65,7 @@ fn has_symbols_around(matrix: &Vec<Vec<char>>, row: usize, column: usize) -> boo
 
 pub fn solve_part2(input: &str) -> String {
     let matrix = parse_input(input);
-    let gear_numbers =  find_gear_numbers(&matrix);
+    let gear_numbers = find_gear_numbers(&matrix);
     let mut gear_map: HashMap<(usize, usize), Vec<u32>> = HashMap::new();
     for gear_number in gear_numbers {
         gear_map
@@ -71,7 +76,7 @@ pub fn solve_part2(input: &str) -> String {
 
     let mut sum = 0;
     for (_, value) in gear_map {
-        if  value.len() == 2 {
+        if value.len() == 2 {
             sum += value[0] * value[1];
         }
     }
@@ -79,7 +84,7 @@ pub fn solve_part2(input: &str) -> String {
 }
 
 fn find_gear_numbers(matrix: &Vec<Vec<char>>) -> Vec<GearNumber> {
-    let mut start_index: Option<usize> =  None;
+    let mut start_index: Option<usize> = None;
     let mut gear_numbers = Vec::new();
     for i in 0..matrix.len() {
         for j in 0..matrix[i].len() {
@@ -106,7 +111,12 @@ fn find_gear_numbers(matrix: &Vec<Vec<char>>) -> Vec<GearNumber> {
     return gear_numbers;
 }
 
-fn read_gear_number(matrix: &Vec<Vec<char>>, row: usize, start_index: usize, end_index: usize) -> Option<GearNumber> {
+fn read_gear_number(
+    matrix: &Vec<Vec<char>>,
+    row: usize,
+    start_index: usize,
+    end_index: usize,
+) -> Option<GearNumber> {
     for z in start_index..end_index {
         if let Some(gear_index) = find_gear_index(matrix, row, z) {
             let number = read_number(&matrix[row][start_index..end_index]);
@@ -116,10 +126,9 @@ fn read_gear_number(matrix: &Vec<Vec<char>>, row: usize, start_index: usize, end
     return None;
 }
 
-
 fn find_gear_index(matrix: &Vec<Vec<char>>, row: usize, column: usize) -> Option<(usize, usize)> {
-    for ii in  row.saturating_sub(1)..cmp::min(row+2,  matrix.len()) {
-        for jj in column.saturating_sub(1)..cmp::min(column+2, matrix[row].len()) {
+    for ii in row.saturating_sub(1)..cmp::min(row + 2, matrix.len()) {
+        for jj in column.saturating_sub(1)..cmp::min(column + 2, matrix[row].len()) {
             if matrix[ii][jj] == '*' {
                 return Some((ii, jj));
             }
@@ -133,8 +142,5 @@ fn read_number(slice: &[char]) -> u32 {
 }
 
 fn parse_input(input: &str) -> Vec<Vec<char>> {
-    input
-        .lines()
-        .map(|line| line.chars().collect())
-        .collect()
+    input.lines().map(|line| line.chars().collect()).collect()
 }

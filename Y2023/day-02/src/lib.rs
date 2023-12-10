@@ -39,7 +39,7 @@ fn get_product(draws: Vec<Draw>) -> u32 {
             Draw {
                 red: cmp::max(minimum.red, draw.red),
                 green: cmp::max(minimum.green, draw.green),
-                blue:cmp::max(minimum.blue, draw.blue)
+                blue: cmp::max(minimum.blue, draw.blue)
             }
         );
     return minimum.red * minimum.blue * minimum.green;

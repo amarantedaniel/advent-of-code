@@ -49,9 +49,6 @@ fn parse_line(line: &str) -> ScratchCard {
         .split(":")
         .last()
         .unwrap()
-        .split(":")
-        .last()
-        .unwrap()
         .split("|")
         .map(parse_numbers)
         .collect::<Vec<_>>();

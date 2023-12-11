@@ -1,8 +1,7 @@
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 struct ScratchCard {
-    index: usize,
     winning_numbers: HashSet<u32>,
     own_numbers: HashSet<u32>,
 }
@@ -29,33 +28,23 @@ pub fn solve_part1(input: &str) -> String {
 }
 
 pub fn solve_part2(input: &str) -> String {
-    let all_scratch_cards = parse(input);
-    let mut count = 0;
-    let mut scratch_cards = VecDeque::new();
-
-    for i in 0..all_scratch_cards.len() {
-        scratch_cards.push_back(&all_scratch_cards[i]);
-    }
-    while !scratch_cards.is_empty() {
-        count += 1;
-        let scratch_card = scratch_cards.pop_front().unwrap();
+    let scratch_cards = parse(input);
+    let mut card_counts: HashMap<usize, u32> = HashMap::new();
+    for (i, scratch_card) in scratch_cards.iter().enumerate() {
+        *card_counts.entry(i).or_insert(0) += 1;
         let matches = scratch_card.matches();
-        for i in scratch_card.index..(scratch_card.index + matches) {
-            scratch_cards.push_back(&all_scratch_cards[i + 1]);
+        for j in (i + 1)..(i + matches + 1) {
+            *card_counts.entry(j).or_insert(0) += *card_counts.get(&i).unwrap();
         }
     }
-    return count.to_string();
+    return card_counts.values().sum::<u32>().to_string();
 }
 
 fn parse(input: &str) -> Vec<ScratchCard> {
-    return input
-        .lines()
-        .enumerate()
-        .map(|(index, line)| parse_line(index, line))
-        .collect();
+    return input.lines().map(parse_line).collect();
 }
 
-fn parse_line(index: usize, line: &str) -> ScratchCard {
+fn parse_line(line: &str) -> ScratchCard {
     let parts = line
         .split(":")
         .last()
@@ -67,7 +56,6 @@ fn parse_line(index: usize, line: &str) -> ScratchCard {
         .map(parse_numbers)
         .collect::<Vec<_>>();
     return ScratchCard {
-        index,
         winning_numbers: HashSet::from_iter(parts[0].iter().copied()),
         own_numbers: HashSet::from_iter(parts[1].iter().copied()),
     };

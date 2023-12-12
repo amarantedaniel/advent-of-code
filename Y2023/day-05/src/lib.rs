@@ -1,4 +1,4 @@
-use std::cmp;
+use std::{cmp, ops::Range};
 
 #[derive(Debug)]
 struct Almanac {
@@ -52,8 +52,53 @@ fn apply_row(row: &MapRow, seed: u64) -> Option<u64> {
 }
 
 pub fn solve_part2(input: &str) -> String {
-    return input.to_string();
+    let almanac = parse(input);
+    for location in 0..u64::MAX {
+        let seed_ranges = get_seed_ranges(&almanac.seeds);
+        let seed = get_seed(location, &almanac.maps);
+        for range in seed_ranges {
+            if range.contains(&seed) {
+                println!("seed is {:?}", seed);
+                println!("location is {:?}", location);
+                return "".to_string();
+            }
+        }
+    }
+    return "".to_string();
 }
+
+fn get_seed_ranges(seed_numbers: &Vec<u64>) -> Vec<Range<u64>> {
+    return seed_numbers
+        .chunks(2)
+        .map(|chunk| (chunk[0]..(chunk[0] + chunk[1])))
+        .collect();
+}
+
+fn get_seed(location: u64, maps: &Vec<Map>) -> u64 {
+    return maps
+        .iter()
+        .rev()
+        .fold(location, |current, map| apply_map_reversed(map, current));
+}
+
+fn apply_map_reversed(map: &Map, location: u64) -> u64 {
+    for row in &map.rows {
+        if let Some(u64) = apply_row_reversed(row, location) {
+            return u64;
+        }
+    }
+    return location;
+}
+
+fn apply_row_reversed(row: &MapRow, location: u64) -> Option<u64> {
+    let range = row.destination_range_start..(row.destination_range_start + row.range_length);
+    if range.contains(&location) {
+        return Some(row.source_range_start + (location - row.destination_range_start));
+    }
+    return None;
+}
+
+///////// Parser
 
 fn parse(input: &str) -> Almanac {
     let lines = input.split("\n\n").collect::<Vec<_>>();

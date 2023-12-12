@@ -1,17 +1,14 @@
 use std::{cmp, ops::Range};
 
-#[derive(Debug)]
 struct Almanac {
     seeds: Vec<u64>,
     maps: Vec<Map>,
 }
 
-#[derive(Debug)]
 struct Map {
     rows: Vec<MapRow>,
 }
 
-#[derive(Debug)]
 struct MapRow {
     source_range_start: u64,
     destination_range_start: u64,
@@ -58,9 +55,7 @@ pub fn solve_part2(input: &str) -> String {
         let seed = get_seed(location, &almanac.maps);
         for range in seed_ranges {
             if range.contains(&seed) {
-                println!("seed is {:?}", seed);
-                println!("location is {:?}", location);
-                return "".to_string();
+                return location.to_string();
             }
         }
     }
@@ -97,8 +92,6 @@ fn apply_row_reversed(row: &MapRow, location: u64) -> Option<u64> {
     }
     return None;
 }
-
-///////// Parser
 
 fn parse(input: &str) -> Almanac {
     let lines = input.split("\n\n").collect::<Vec<_>>();

@@ -1,8 +1,23 @@
 use std::{cmp::Ordering, collections::HashMap};
 
 #[derive(Debug, PartialEq, Eq)]
+enum Card {
+    Numeric(u64),
+    Joker,
+}
+
+impl Card {
+    fn number(&self) -> u64 {
+        match self {
+            Card::Numeric(number) => return *number,
+            Card::Joker => return 0,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
 struct Hand {
-    cards: Vec<u64>,
+    cards: Vec<Card>,
     bid: u64,
     hand_type: HandType,
 }
@@ -16,6 +31,18 @@ enum HandType {
     TwoPairs,
     OnePair,
     HighCard,
+}
+
+impl Ord for Card {
+    fn cmp(&self, other: &Self) -> Ordering {
+        return self.number().cmp(&other.number());
+    }
+}
+
+impl PartialOrd for Card {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Ord for Hand {
@@ -63,28 +90,35 @@ impl PartialOrd for HandType {
 }
 
 pub fn solve_part1(input: &str) -> String {
-    let mut hands = parse(input);
-    hands.sort();
-    return hands
-        .iter()
-        .enumerate()
-        .fold(0, |acc, (index, hand)| {
-            acc + ((index + 1) as u64) * hand.bid
-        })
-        .to_string();
+    let mut hands = parse(input, false);
+    return solve(&mut hands).to_string();
 }
 
 pub fn solve_part2(input: &str) -> String {
-    return input.to_string();
+    let mut hands = parse(input, true);
+    return solve(&mut hands).to_string();
 }
 
-fn parse(input: &str) -> Vec<Hand> {
-    return input.lines().map(parse_line).collect();
+fn solve(hands: &mut Vec<Hand>) -> u64 {
+    hands.sort();
+    return hands.iter().enumerate().fold(0, |acc, (index, hand)| {
+        acc + ((index + 1) as u64) * hand.bid
+    });
 }
 
-fn parse_line(line: &str) -> Hand {
+fn parse(input: &str, include_joker: bool) -> Vec<Hand> {
+    return input
+        .lines()
+        .map(|line| parse_line(line, include_joker))
+        .collect();
+}
+
+fn parse_line(line: &str, include_joker: bool) -> Hand {
     let parts = line.split(" ").collect::<Vec<_>>();
-    let cards = parts[0].chars().map(parse_card).collect::<Vec<_>>();
+    let cards = parts[0]
+        .chars()
+        .map(|char| parse_card(char, include_joker))
+        .collect::<Vec<_>>();
     let bid = parts[1].parse::<u64>().unwrap();
     let hand_type = check_hand_type(&cards);
     return Hand {
@@ -94,27 +128,42 @@ fn parse_line(line: &str) -> Hand {
     };
 }
 
-fn parse_card(char: char) -> u64 {
+fn parse_card(char: char, include_joker: bool) -> Card {
     if let Some(number) = char.to_digit(10) {
-        return number.into();
+        return Card::Numeric(number.into());
     }
     match char {
-        'T' => return 10,
-        'J' => return 11,
-        'Q' => return 12,
-        'K' => return 13,
-        'A' => return 14,
+        'T' => return Card::Numeric(10),
+        'J' => {
+            return if include_joker {
+                Card::Joker
+            } else {
+                Card::Numeric(11)
+            }
+        }
+        'Q' => return Card::Numeric(12),
+        'K' => return Card::Numeric(13),
+        'A' => return Card::Numeric(14),
         _ => panic!(""),
     }
 }
 
-fn check_hand_type(cards: &Vec<u64>) -> HandType {
+fn check_hand_type(cards: &Vec<Card>) -> HandType {
     let mut hash_map: HashMap<u64, u64> = HashMap::new();
-    for &card in cards {
-        *hash_map.entry(card).or_insert(0) += 1;
+    let mut joker_count = 0;
+    for card in cards {
+        match card {
+            Card::Numeric(number) => *hash_map.entry(*number).or_insert(0) += 1,
+            Card::Joker => joker_count += 1,
+        }
     }
     let mut values = hash_map.values().copied().collect::<Vec<_>>();
+    let length = values.len();
+    if length == 0 {
+        return HandType::FiveOfAKind;
+    }
     values.sort();
+    values[length - 1] += joker_count;
     match values.as_slice() {
         [5] => return HandType::FiveOfAKind,
         [1, 4] => return HandType::FourOfAKind,

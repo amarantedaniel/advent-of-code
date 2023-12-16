@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(Debug)]
 enum Direction {
@@ -8,61 +8,32 @@ enum Direction {
 
 pub fn solve_part1(input: &str) -> String {
     let (directions, map) = parse(input);
-    let mut index = 0;
-    let mut current = "AAA".to_string();
-    let mut steps = 0;
-    loop {
-        if current == "ZZZ" {
-            break;
-        }
-        steps += 1;
-        let (left, right) = map.get(&current).unwrap();
-        match &directions[index] {
-            Direction::Right => current = right.to_string(),
-            Direction::Left => current = left.to_string(),
-        }
-        index = (index + 1) % directions.len();
-    }
-    return steps.to_string();
+    return find_first_exit("AAA".to_string(), &directions, &map).to_string();
 }
 
 pub fn solve_part2(input: &str) -> String {
     let (directions, map) = parse(input);
     for key in map.keys() {
         if key.ends_with("A") {
-            find_loops(key.clone(), &directions, &map);
+            let exit_position = find_first_exit(key.clone(), &directions, &map);
+            println!("{}", exit_position);
         }
     }
-    // find_loops("FSA".to_string(), directions, map);
     return "".to_string();
 }
 
-fn find_loops(
+fn find_first_exit(
     initial_state: String,
     directions: &Vec<Direction>,
     map: &HashMap<String, (String, String)>,
-) {
+) -> u64 {
     let mut index = 0;
     let mut current = initial_state;
-    let mut states: HashMap<(usize, String), u64> = HashMap::new();
     let mut step = 0;
-    let mut end_room_steps: Vec<u64> = Vec::new();
-
     loop {
         if current.ends_with("Z") {
-            end_room_steps.push(step);
+            return step;
         }
-        if let Some(original_step) = states.get(&(index, current.clone())) {
-            println!("found loop from step {} to step {}", original_step, step);
-            println!("{:?}", end_room_steps);
-            break;
-        }
-        // if step == 4 + ((12087 - 4) * 1) {
-        // if step == 4 {
-        //     println!("{:?}", end_room_steps);
-        //     break;
-        // }
-        states.insert((index, current.clone()), step);
         step += 1;
         let (left, right) = map.get(&current).unwrap();
         match &directions[index] {

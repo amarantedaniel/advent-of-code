@@ -1,3 +1,4 @@
+use num::integer::lcm;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -13,13 +14,14 @@ pub fn solve_part1(input: &str) -> String {
 
 pub fn solve_part2(input: &str) -> String {
     let (directions, map) = parse(input);
+    let mut result = 1;
     for key in map.keys() {
         if key.ends_with("A") {
             let exit_position = find_first_exit(key.clone(), &directions, &map);
-            println!("{}", exit_position);
+            result = lcm(result, exit_position);
         }
     }
-    return "".to_string();
+    return result.to_string();
 }
 
 fn find_first_exit(

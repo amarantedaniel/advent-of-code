@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 enum Direction {
@@ -27,7 +27,50 @@ pub fn solve_part1(input: &str) -> String {
 }
 
 pub fn solve_part2(input: &str) -> String {
-    return input.to_string();
+    let (directions, map) = parse(input);
+    for key in map.keys() {
+        if key.ends_with("A") {
+            find_loops(key.clone(), &directions, &map);
+        }
+    }
+    // find_loops("FSA".to_string(), directions, map);
+    return "".to_string();
+}
+
+fn find_loops(
+    initial_state: String,
+    directions: &Vec<Direction>,
+    map: &HashMap<String, (String, String)>,
+) {
+    let mut index = 0;
+    let mut current = initial_state;
+    let mut states: HashMap<(usize, String), u64> = HashMap::new();
+    let mut step = 0;
+    let mut end_room_steps: Vec<u64> = Vec::new();
+
+    loop {
+        if current.ends_with("Z") {
+            end_room_steps.push(step);
+        }
+        if let Some(original_step) = states.get(&(index, current.clone())) {
+            println!("found loop from step {} to step {}", original_step, step);
+            println!("{:?}", end_room_steps);
+            break;
+        }
+        // if step == 4 + ((12087 - 4) * 1) {
+        // if step == 4 {
+        //     println!("{:?}", end_room_steps);
+        //     break;
+        // }
+        states.insert((index, current.clone()), step);
+        step += 1;
+        let (left, right) = map.get(&current).unwrap();
+        match &directions[index] {
+            Direction::Right => current = right.to_string(),
+            Direction::Left => current = left.to_string(),
+        }
+        index = (index + 1) % directions.len();
+    }
 }
 
 fn parse(input: &str) -> (Vec<Direction>, HashMap<String, (String, String)>) {

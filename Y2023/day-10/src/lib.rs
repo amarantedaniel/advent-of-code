@@ -112,11 +112,8 @@ pub fn solve_part1(input: &str) -> String {
         let mut previous = start_point;
         let mut current = exit;
         while current != start_point {
-            if let Some(count) = distances.get(&current) {
-                if step_counter < *count {
-                    distances.insert(current, step_counter);
-                }
-            } else {
+            let count = *distances.get(&current).unwrap_or(&u64::MAX);
+            if step_counter < count {
                 distances.insert(current, step_counter);
             }
             let next = walk(&previous, &current, &pipes);

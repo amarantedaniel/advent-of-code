@@ -1,5 +1,6 @@
 use core::fmt;
-use std::collections::{HashMap, HashSet};
+use std::cmp;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 #[derive(Debug, Eq, PartialEq, Clone, Copy, Hash)]
 struct Point {
@@ -7,6 +8,7 @@ struct Point {
     j: usize,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 enum ExpandedSquare {
     Pipe,
     Empty,
@@ -206,7 +208,8 @@ pub fn solve_part2(input: &str) -> String {
     let path = find_path(&pipes);
     print(&pipes, &path);
     println!("");
-    let expanded = expand(&pipes, &path);
+    let mut expanded = expand(&pipes, &path);
+    flood(&mut expanded);
     print_expanded(&expanded);
     return "".to_string();
 }
@@ -257,6 +260,23 @@ fn expand(pipes: &Vec<Vec<Square>>, path: &HashSet<Point>) -> Vec<Vec<ExpandedSq
         }
     }
     return result;
+}
+
+fn flood(expanded: &mut Vec<Vec<ExpandedSquare>>) {
+    let start_point = Point {i: 0, j: 0};
+    let mut queue: VecDeque<Point> = VecDeque::new();
+    queue.push_back(start_point);
+    while !queue.is_empty() {
+        let point = queue.pop_front().unwrap();
+        expanded[point.i][point.j] = ExpandedSquare::Flooded;
+        for i in point.i.saturating_sub(1)..cmp::min(point.i + 2, expanded.len()) {
+            for j in point.j.saturating_sub(1)..cmp::min(point.j + 2, expanded[point.i].len()) {
+                if &expanded[i][j] == &ExpandedSquare::Empty && !queue.contains(&Point { i, j }) {
+                    queue.push_back(Point { i, j })
+                }
+            }
+        }
+    }
 }
 
 fn render_expanded_pipe(point: Point, di: usize, dj: usize, pipes: &Vec<Vec<Square>>) -> ExpandedSquare {

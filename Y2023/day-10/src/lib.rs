@@ -1,4 +1,3 @@
-use core::fmt;
 use std::cmp;
 use std::collections::{HashMap, HashSet, VecDeque};
 
@@ -66,47 +65,6 @@ impl Square {
             Square::Start,
         ]
         .contains(self);
-    }
-}
-
-impl fmt::Display for Square {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Square::Start => return write!(f, "S"),
-            Square::Horizontal => return write!(f, "━"),
-            Square::Vertical => return write!(f, "┃"),
-            Square::TopRightBend => return write!(f, "┓"),
-            Square::BottomRightBend => return write!(f, "┛"),
-            Square::TopLeftBend => return write!(f, "┏"),
-            Square::BottomLeftBend => return write!(f, "┗"),
-            Square::Empty => return write!(f, " "),
-        }
-    }
-}
-
-fn print(pipes: &Vec<Vec<Square>>, path: &HashSet<Point>) {
-    for (i, line) in pipes.iter().enumerate() {
-        for (j, square) in line.iter().enumerate() {
-            if path.contains(&Point { i, j }) {
-                print!("{}", square);
-            } else {
-                print!("{}", Square::Empty);
-            }
-        }
-        println!("");
-    }
-}
-
-fn print_expanded(pipes: &Vec<Vec<ExpandedSquare>>) {
-    for line in pipes {
-        for square in line {
-            match square {
-                ExpandedSquare::Pipe => print!("{}", "#"),
-                ExpandedSquare::Empty => print!("{}", "."),
-                ExpandedSquare::Flooded => print!("{}", "@"),
-            }
-        }
-        println!("");
     }
 }
 
@@ -202,16 +160,11 @@ fn find_exits(point: &Point, pipes: &Vec<Vec<Square>>) -> Vec<Point> {
 }
 
 pub fn solve_part2(input: &str) -> String {
-    println!("{}", input);
-    println!("");
     let pipes = parse(input);
     let path = find_path(&pipes);
-    print(&pipes, &path);
-    println!("");
     let mut expanded = expand(&pipes, &path);
     flood(&mut expanded);
-    print_expanded(&expanded);
-    return "".to_string();
+    return count_enclosed(&expanded).to_string();
 }
 
 fn find_path(pipes: &Vec<Vec<Square>>) -> HashSet<Point> {
@@ -277,6 +230,26 @@ fn flood(expanded: &mut Vec<Vec<ExpandedSquare>>) {
             }
         }
     }
+}
+
+fn count_enclosed(expanded: &Vec<Vec<ExpandedSquare>>) -> u64 {
+    let mut count = 0;
+    for i in (0..expanded.len()).step_by(3) {
+        for j in (0..expanded[i].len()).step_by(3) {
+            let mut is_enclosed = true;
+            for ii in 0..3 {
+                for jj in 0..3 {
+                    if expanded[i + ii][j + jj] != ExpandedSquare::Empty {
+                        is_enclosed = false
+                    }
+                }
+            }
+            if is_enclosed {
+                count += 1;
+            }
+        }
+    }
+    return count;
 }
 
 fn render_expanded_pipe(point: Point, di: usize, dj: usize, pipes: &Vec<Vec<Square>>) -> ExpandedSquare {

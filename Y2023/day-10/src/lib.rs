@@ -70,8 +70,13 @@ impl Square {
 
 pub fn solve_part1(input: &str) -> String {
     let pipes = parse(input);
+    return traverse(&pipes).values().max().unwrap().to_string();
+}
+
+fn traverse(pipes: &Vec<Vec<Square>>) -> HashMap<Point, u64> {
     let mut distances: HashMap<Point, u64> = HashMap::new();
     let start_point = find_start_point(&pipes);
+    distances.insert(start_point, 0);
     let exits = find_exits(&start_point, &pipes);
     for exit in exits {
         let mut step_counter: u64 = 1;
@@ -88,7 +93,7 @@ pub fn solve_part1(input: &str) -> String {
             step_counter += 1;
         }
     }
-    return distances.values().max().unwrap().to_string();
+    return distances;
 }
 
 fn walk(previous: &Point, current: &Point, pipes: &Vec<Vec<Square>>) -> Point {
@@ -161,26 +166,10 @@ fn find_exits(point: &Point, pipes: &Vec<Vec<Square>>) -> Vec<Point> {
 
 pub fn solve_part2(input: &str) -> String {
     let pipes = parse(input);
-    let path = find_path(&pipes);
+    let path = traverse(&pipes).keys().cloned().collect();
     let mut expanded = expand(&pipes, &path);
     flood(&mut expanded);
     return count_enclosed(&expanded).to_string();
-}
-
-fn find_path(pipes: &Vec<Vec<Square>>) -> HashSet<Point> {
-    let start_point = find_start_point(&pipes);
-    let exit = *find_exits(&start_point, &pipes).first().unwrap();
-    let mut points: HashSet<Point> = HashSet::new();
-    points.insert(start_point);
-    let mut previous = start_point;
-    let mut current = exit;
-    while current != start_point {
-        points.insert(current);
-        let next = walk(&previous, &current, &pipes);
-        previous = current;
-        current = next;
-    }
-    return points;
 }
 
 fn expand(pipes: &Vec<Vec<Square>>, path: &HashSet<Point>) -> Vec<Vec<ExpandedSquare>> {

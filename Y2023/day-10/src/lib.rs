@@ -225,15 +225,7 @@ fn count_enclosed(expanded: &Vec<Vec<ExpandedSquare>>) -> u64 {
     let mut count = 0;
     for i in (0..expanded.len()).step_by(3) {
         for j in (0..expanded[i].len()).step_by(3) {
-            let mut is_enclosed = true;
-            for ii in 0..3 {
-                for jj in 0..3 {
-                    if expanded[i + ii][j + jj] != ExpandedSquare::Empty {
-                        is_enclosed = false
-                    }
-                }
-            }
-            if is_enclosed {
+            if (0..3).all(|ii| (0..3).all(|jj| expanded[i + ii][j + jj] == ExpandedSquare::Empty)) {
                 count += 1;
             }
         }

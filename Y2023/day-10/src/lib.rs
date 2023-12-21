@@ -1,10 +1,15 @@
 use core::fmt;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Eq, PartialEq, Clone, Copy, Hash)]
 struct Point {
     i: usize,
     j: usize,
+}
+
+enum ExpandedSquare {
+    Pipe,
+    Empty,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -76,11 +81,11 @@ impl fmt::Display for Square {
     }
 }
 
-fn print(pipes: &Vec<Vec<Square>>, current: &Point) {
+fn print(pipes: &Vec<Vec<Square>>, path: &HashSet<Point>) {
     for (i, line) in pipes.iter().enumerate() {
         for (j, square) in line.iter().enumerate() {
-            if current.i == i && current.j == j {
-                print!("{}", "X");
+            if path.contains(&Point { i, j }) {
+                print!("{}", "#");
             } else {
                 print!("{}", square);
             }
@@ -89,13 +94,12 @@ fn print(pipes: &Vec<Vec<Square>>, current: &Point) {
     }
 }
 
-fn print_counts(pipes: &Vec<Vec<Square>>, map: &HashMap<Point, u64>) {
-    for (i, line) in pipes.iter().enumerate() {
-        for (j, square) in line.iter().enumerate() {
-            if let Some(count) = map.get(&Point { i: i, j: j }) {
-                print!("{}", count);
-            } else {
-                print!("{}", square);
+fn print_expanded(pipes: &Vec<Vec<ExpandedSquare>>) {
+    for line in pipes {
+        for square in line {
+            match square {
+                ExpandedSquare::Pipe => print!("{}", "#"),
+                ExpandedSquare::Empty => print!("{}", "."),
             }
         }
         println!("");
@@ -194,7 +198,76 @@ fn find_exits(point: &Point, pipes: &Vec<Vec<Square>>) -> Vec<Point> {
 }
 
 pub fn solve_part2(input: &str) -> String {
-    return input.to_string();
+    let pipes = parse(input);
+    let path = find_path(&pipes);
+    print(&pipes, &HashSet::new());
+    println!("");
+    print(&pipes, &path);
+    let expanded = expand(&pipes, &path);
+    print_expanded(&expanded);
+    return "".to_string();
+}
+
+fn find_path(pipes: &Vec<Vec<Square>>) -> HashSet<Point> {
+    let start_point = find_start_point(&pipes);
+    let exit = *find_exits(&start_point, &pipes).first().unwrap();
+    let mut points: HashSet<Point> = HashSet::new();
+    points.insert(start_point);
+    let mut previous = start_point;
+    let mut current = exit;
+    while current != start_point {
+        points.insert(current);
+        let next = walk(&previous, &current, &pipes);
+        previous = current;
+        current = next;
+    }
+    return points;
+}
+
+fn expand(pipes: &Vec<Vec<Square>>, path: &HashSet<Point>) -> Vec<Vec<ExpandedSquare>> {
+    let mut result: Vec<Vec<ExpandedSquare>> = Vec::new();
+    let mut current_row: Vec<ExpandedSquare> = Vec::new();
+    let mut i = 0;
+    let mut j = 0;
+    let mut ii = 0;
+    let mut jj = 0;
+    while i < pipes.len() {
+        while j < pipes[i].len() {
+            if path.contains(&Point { i, j }) {
+                current_row.push(render_expanded_pipe(&pipes[i][j], ii, jj));
+            } else {
+                current_row.push(ExpandedSquare::Empty);
+            }
+            jj += 1;
+            if jj == 3 {
+                jj = 0;
+                j += 1;
+            }
+        }
+        result.push(current_row);
+        current_row = Vec::new();
+        j = 0;
+        ii += 1;
+        if ii == 3 {
+            ii = 0;
+            i += 1;
+        }
+    }
+    return result;
+}
+
+fn render_expanded_pipe(pipe: &Square, i: usize, j: usize) -> ExpandedSquare {
+    match pipe {
+        Square::Horizontal => match (i, j) {
+            (1, _) => return ExpandedSquare::Pipe,
+            _ => return ExpandedSquare::Empty,
+        },
+        Square::Vertical => match (i, j) {
+            (_, 1) => return ExpandedSquare::Pipe,
+            _ => return ExpandedSquare::Empty,
+        },
+        _ => return ExpandedSquare::Pipe,
+    };
 }
 
 fn parse(input: &str) -> Vec<Vec<Square>> {

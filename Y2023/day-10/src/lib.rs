@@ -11,7 +11,7 @@ struct Point {
 enum ExpandedSquare {
     Pipe,
     Empty,
-    Flooded
+    Flooded,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -205,7 +205,7 @@ fn expand(pipes: &Vec<Vec<Square>>, path: &HashSet<Point>) -> Vec<Vec<ExpandedSq
 }
 
 fn flood(expanded: &mut Vec<Vec<ExpandedSquare>>) {
-    let start_point = Point {i: 0, j: 0};
+    let start_point = Point { i: 0, j: 0 };
     let mut queue: VecDeque<Point> = VecDeque::new();
     queue.push_back(start_point);
     while !queue.is_empty() {
@@ -233,7 +233,12 @@ fn count_enclosed(expanded: &Vec<Vec<ExpandedSquare>>) -> u64 {
     return count;
 }
 
-fn render_expanded_pipe(point: Point, di: usize, dj: usize, pipes: &Vec<Vec<Square>>) -> ExpandedSquare {
+fn render_expanded_pipe(
+    point: Point,
+    di: usize,
+    dj: usize,
+    pipes: &Vec<Vec<Square>>,
+) -> ExpandedSquare {
     if di == 1 && dj == 1 {
         return ExpandedSquare::Pipe;
     }

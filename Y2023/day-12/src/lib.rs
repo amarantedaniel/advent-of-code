@@ -1,4 +1,4 @@
-use std::fmt;
+use std::collections::HashMap;
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
 enum Spring {
@@ -7,45 +7,31 @@ enum Spring {
     Unknown,
 }
 
-impl fmt::Display for Spring {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Spring::Operational => write!(f, "."),
-            Spring::Damaged => write!(f, "#"),
-            Spring::Unknown => write!(f, "?"),
-        }
-    }
-}
-
-fn print(springs: &Vec<Spring>) {
-    for spring in springs {
-        print!("{}", spring);
-    }
-    println!("");
-}
-
 pub fn solve_part1(input: &str) -> String {
-    let condition_records = parse(input);
+    let condition_records = parse(input, 1);
     let mut result = 0;
     for (springs, group_sizes) in condition_records {
-        let count = count_solutions(&springs, &group_sizes);
-        println!("{}", count);
+        // let mut cache = HashMap::new();
+        let count = count_solutions(&springs, &group_sizes, &mut HashMap::new());
         result += count
     }
     return result.to_string();
 }
 
-fn count_solutions(springs: &Vec<Spring>, group_sizes: &Vec<usize>) -> u64 {
-    // println!("\nrecursion starting");
-    // print(springs);
-    // println!("group_sizes: {:?}", group_sizes);
+fn count_solutions(
+    springs: &Vec<Spring>,
+    group_sizes: &Vec<usize>,
+    mut cache: &mut HashMap<(Vec<Spring>, Vec<usize>), u64>,
+) -> u64 {
+    if let Some(result) = cache.get(&(springs.clone(), group_sizes.clone())) {
+        return *result;
+    }
     if springs.is_empty() {
         return if group_sizes.is_empty() { 1 } else { 0 };
     }
 
     if springs[0] == Spring::Operational {
-        // println!("will remove {}", Spring::Operational);
-        return count_solutions(&springs[1..].to_vec(), group_sizes);
+        return count_solutions(&springs[1..].to_vec(), group_sizes, &mut cache);
     }
 
     if springs[0] == Spring::Damaged {
@@ -63,24 +49,26 @@ fn count_solutions(springs: &Vec<Spring>, group_sizes: &Vec<usize>) -> u64 {
 
         if group_size < springs.len() {
             if springs[group_size] != Spring::Damaged {
-                // println!("will remove {:?}", &springs[..group_size + 1]);
                 return count_solutions(
                     &springs[group_size + 1..].to_vec(),
                     &group_sizes[1..].to_vec(),
+                    &mut cache,
                 );
             } else {
                 return 0;
             }
         } else {
-            // println!("will remove {:?}", &springs[..group_size]);
-            return count_solutions(&springs[group_size..].to_vec(), &group_sizes[1..].to_vec());
+            return count_solutions(
+                &springs[group_size..].to_vec(),
+                &group_sizes[1..].to_vec(),
+                &mut cache,
+            );
         }
     }
 
     let mut count = 0;
 
-    // println!("will remove {}", Spring::Operational);
-    count += count_solutions(&springs[1..].to_vec(), group_sizes);
+    count += count_solutions(&springs[1..].to_vec(), group_sizes, &mut cache);
 
     if group_sizes.is_empty() {
         return count;
@@ -96,47 +84,71 @@ fn count_solutions(springs: &Vec<Spring>, group_sizes: &Vec<usize>) -> u64 {
     }
     if group_size < springs.len() {
         if springs[group_size] != Spring::Damaged {
-            // println!("will remove {:?}", &springs[..group_size + 1]);
             count += count_solutions(
                 &springs[group_size + 1..].to_vec(),
                 &group_sizes[1..].to_vec(),
+                &mut cache,
             );
         }
     } else {
-        // println!("will remove {:?}", &springs[..group_size]);
-        count += count_solutions(&springs[group_size..].to_vec(), &group_sizes[1..].to_vec());
+        count += count_solutions(
+            &springs[group_size..].to_vec(),
+            &group_sizes[1..].to_vec(),
+            &mut cache,
+        );
     }
+
+    cache.insert((springs.clone(), group_sizes.clone()), count);
 
     return count;
 }
 
 pub fn solve_part2(input: &str) -> String {
-    return input.to_string();
+    let condition_records = parse(input, 5);
+    let mut result = 0;
+    for (springs, group_sizes) in condition_records.iter() {
+        // let mut cache = HashMap::new();
+        // let count = count_solutions(&springs, &group_sizes, &mut cache);
+        result += count_solutions(&springs, &group_sizes, &mut HashMap::new());
+    }
+    return result.to_string();
 }
 
-fn parse(input: &str) -> Vec<(Vec<Spring>, Vec<usize>)> {
-    return input.lines().map(parse_line).collect();
+fn parse(input: &str, times: u64) -> Vec<(Vec<Spring>, Vec<usize>)> {
+    return input.lines().map(|line| parse_line(line, times)).collect();
 }
 
-fn parse_line(line: &str) -> (Vec<Spring>, Vec<usize>) {
+fn parse_line(line: &str, times: u64) -> (Vec<Spring>, Vec<usize>) {
     let parts = line.split(" ").collect::<Vec<_>>();
-    return (parse_springs(parts[0]), parse_group_sizes(parts[1]));
+    return (
+        parse_springs(parts[0], times),
+        parse_group_sizes(parts[1], times),
+    );
 }
 
-fn parse_springs(input: &str) -> Vec<Spring> {
-    return input
+fn parse_springs(input: &str, times: u64) -> Vec<Spring> {
+    let parsed = input
         .chars()
         .map(|char| match char {
             '#' => return Spring::Damaged,
             '?' => return Spring::Unknown,
             _ => return Spring::Operational,
         })
-        .collect();
+        .collect::<Vec<_>>();
+
+    let copies = (1..times).map(|_| parsed.clone());
+    let mut result = parsed.clone();
+    for copy in copies {
+        result.push(Spring::Unknown);
+        result.extend(copy);
+    }
+    return result;
 }
 
-fn parse_group_sizes(input: &str) -> Vec<usize> {
-    return input
+fn parse_group_sizes(input: &str, times: u64) -> Vec<usize> {
+    let parsed = input
         .split(",")
         .filter_map(|part| part.parse().ok())
-        .collect();
+        .collect::<Vec<_>>();
+    return (0..times).map(|_| parsed.clone()).flat_map(|v| v).collect();
 }

@@ -7,15 +7,30 @@ enum Spring {
     Unknown,
 }
 
-pub fn solve_part1(input: &str) -> String {
-    let condition_records = parse(input, 1);
-    let mut result = 0;
-    for (springs, group_sizes) in condition_records {
-        // let mut cache = HashMap::new();
-        let count = count_solutions(&springs, &group_sizes, &mut HashMap::new());
-        result += count
+impl Spring {
+    fn is_damaged_or_unknown(&self) -> bool {
+        return self == &Spring::Damaged || self == &Spring::Unknown;
     }
-    return result.to_string();
+
+    fn is_operational_or_unknown(&self) -> bool {
+        return self == &Spring::Operational || self == &Spring::Unknown;
+    }
+}
+
+pub fn solve_part1(input: &str) -> String {
+    return solve(parse(input, 1)).to_string();
+}
+
+pub fn solve_part2(input: &str) -> String {
+    return solve(parse(input, 5)).to_string();
+}
+
+fn solve(records: Vec<(Vec<Spring>, Vec<usize>)>) -> u64 {
+    let mut result = 0;
+    for (springs, group_sizes) in records.iter() {
+        result += count_solutions(&springs, &group_sizes, &mut HashMap::new());
+    }
+    return result;
 }
 
 fn count_solutions(
@@ -23,95 +38,54 @@ fn count_solutions(
     group_sizes: &Vec<usize>,
     mut cache: &mut HashMap<(Vec<Spring>, Vec<usize>), u64>,
 ) -> u64 {
-    if let Some(result) = cache.get(&(springs.clone(), group_sizes.clone())) {
-        return *result;
-    }
     if springs.is_empty() {
         return if group_sizes.is_empty() { 1 } else { 0 };
     }
 
-    if springs[0] == Spring::Operational {
-        return count_solutions(&springs[1..].to_vec(), group_sizes, &mut cache);
+    if let Some(result) = cache.get(&(springs.clone(), group_sizes.clone())) {
+        return *result;
     }
-
-    if springs[0] == Spring::Damaged {
-        if group_sizes.is_empty() {
-            return 0;
-        }
-        let group_size = group_sizes[0];
-        if group_size > springs.len() {
-            return 0;
-        }
-        let window = &springs[..group_size];
-        if window.iter().any(|spring| spring == &Spring::Operational) {
-            return 0;
-        }
-
-        if group_size < springs.len() {
-            if springs[group_size] != Spring::Damaged {
-                return count_solutions(
-                    &springs[group_size + 1..].to_vec(),
-                    &group_sizes[1..].to_vec(),
-                    &mut cache,
-                );
-            } else {
-                return 0;
-            }
-        } else {
-            return count_solutions(
-                &springs[group_size..].to_vec(),
-                &group_sizes[1..].to_vec(),
-                &mut cache,
-            );
-        }
-    }
-
     let mut count = 0;
+    let spring = springs.first().unwrap();
 
-    count += count_solutions(&springs[1..].to_vec(), group_sizes, &mut cache);
+    if spring.is_operational_or_unknown() {
+        count += count_solutions(&springs[1..].to_vec(), group_sizes, &mut cache);
+    }
 
-    if group_sizes.is_empty() {
-        return count;
-    }
-    let group_size = group_sizes[0];
-
-    if group_size > springs.len() {
-        return count;
-    }
-    let window = &springs[..group_size];
-    if window.iter().any(|spring| spring == &Spring::Operational) {
-        return count;
-    }
-    if group_size < springs.len() {
-        if springs[group_size] != Spring::Damaged {
-            count += count_solutions(
-                &springs[group_size + 1..].to_vec(),
-                &group_sizes[1..].to_vec(),
-                &mut cache,
-            );
-        }
-    } else {
+    if spring.is_damaged_or_unknown() && can_fit_damaged_spring(springs, group_sizes) {
+        let group_size = group_sizes[0];
+        let window_size = if group_size < springs.len() {
+            group_size + 1
+        } else {
+            group_size
+        };
         count += count_solutions(
-            &springs[group_size..].to_vec(),
+            &springs[window_size..].to_vec(),
             &group_sizes[1..].to_vec(),
             &mut cache,
         );
     }
-
     cache.insert((springs.clone(), group_sizes.clone()), count);
 
     return count;
 }
 
-pub fn solve_part2(input: &str) -> String {
-    let condition_records = parse(input, 5);
-    let mut result = 0;
-    for (springs, group_sizes) in condition_records.iter() {
-        // let mut cache = HashMap::new();
-        // let count = count_solutions(&springs, &group_sizes, &mut cache);
-        result += count_solutions(&springs, &group_sizes, &mut HashMap::new());
+fn can_fit_damaged_spring(springs: &Vec<Spring>, group_sizes: &Vec<usize>) -> bool {
+    if group_sizes.is_empty() {
+        return false;
     }
-    return result.to_string();
+    let group_size = group_sizes[0];
+    if group_size > springs.len() {
+        return false;
+    }
+    let window = &springs[..group_size];
+    if window.iter().any(|spring| spring == &Spring::Operational) {
+        return false;
+    }
+    if group_size < springs.len() && springs[group_size] == Spring::Damaged {
+        return false;
+    }
+    return true;
 }
 
 fn parse(input: &str, times: u64) -> Vec<(Vec<Spring>, Vec<usize>)> {

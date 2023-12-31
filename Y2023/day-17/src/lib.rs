@@ -57,7 +57,7 @@ struct State {
 }
 
 impl State {
-    fn top_neighboor(&self, maze: &Vec<Vec<u32>>) -> Option<State> {
+    fn top_neighboor(&self, maze: &Vec<Vec<u32>>, min_steps: i32) -> Option<State> {
         if self.node.direction == Direction::North {
             return self.node.top_neighboor().map(|neighboor| State {
                 node: neighboor,
@@ -66,7 +66,7 @@ impl State {
         } else {
             let mut neighboor: Option<Node> = Some(self.node);
             let mut cost = 0;
-            for _ in 0..4 {
+            for _ in 0..min_steps {
                 neighboor = neighboor.unwrap().top_neighboor();
                 if let Some(n) = neighboor {
                     cost += maze[n.position.row][n.position.column]
@@ -81,7 +81,7 @@ impl State {
         }
     }
 
-    fn left_neighboor(&self, maze: &Vec<Vec<u32>>) -> Option<State> {
+    fn left_neighboor(&self, maze: &Vec<Vec<u32>>, min_steps: i32) -> Option<State> {
         if self.node.direction == Direction::West {
             return self.node.left_neighboor().map(|neighboor| State {
                 node: neighboor,
@@ -90,7 +90,7 @@ impl State {
         } else {
             let mut neighboor: Option<Node> = Some(self.node);
             let mut cost = 0;
-            for _ in 0..4 {
+            for _ in 0..min_steps {
                 neighboor = neighboor.unwrap().left_neighboor();
                 if let Some(n) = neighboor {
                     cost += maze[n.position.row][n.position.column]
@@ -105,7 +105,7 @@ impl State {
         }
     }
 
-    fn bottom_neighboor(&self, maze: &Vec<Vec<u32>>) -> Option<State> {
+    fn bottom_neighboor(&self, maze: &Vec<Vec<u32>>, min_steps: i32) -> Option<State> {
         if self.node.direction == Direction::South {
             return self
                 .node
@@ -117,7 +117,7 @@ impl State {
         } else {
             let mut neighboor: Option<Node> = Some(self.node);
             let mut cost = 0;
-            for _ in 0..4 {
+            for _ in 0..min_steps {
                 neighboor = neighboor.unwrap().bottom_neighboor(maze.len());
                 if let Some(n) = neighboor {
                     cost += maze[n.position.row][n.position.column]
@@ -132,7 +132,7 @@ impl State {
         }
     }
 
-    fn right_neighboor(&self, maze: &Vec<Vec<u32>>) -> Option<State> {
+    fn right_neighboor(&self, maze: &Vec<Vec<u32>>, min_steps: i32) -> Option<State> {
         if self.node.direction == Direction::East {
             return self
                 .node
@@ -144,7 +144,7 @@ impl State {
         } else {
             let mut neighboor: Option<Node> = Some(self.node);
             let mut cost = 0;
-            for _ in 0..4 {
+            for _ in 0..min_steps {
                 neighboor = neighboor.unwrap().right_neighboor(maze[0].len());
                 if let Some(n) = neighboor {
                     cost += maze[n.position.row][n.position.column]
@@ -224,15 +224,36 @@ pub fn solve_part1(input: &str) -> String {
         row: maze.len() - 1,
         column: maze[0].len() - 1,
     };
-    let result = find_path(start_state, end_position, &maze);
+    let result = find_path(start_state, end_position, &maze, 1, 3);
     return result.unwrap().to_string();
 }
 
 pub fn solve_part2(input: &str) -> String {
-    return input.to_string();
+    let maze = parse(input);
+    let start_state = State {
+        node: Node {
+            position: Position { row: 0, column: 0 },
+            direction: Direction::Start,
+            current_steps_forward: 0,
+        },
+        cost: 0,
+    };
+
+    let end_position = Position {
+        row: maze.len() - 1,
+        column: maze[0].len() - 1,
+    };
+    let result = find_path(start_state, end_position, &maze, 4, 10);
+    return result.unwrap().to_string();
 }
 
-fn find_path(start_state: State, end_position: Position, maze: &Vec<Vec<u32>>) -> Option<u32> {
+fn find_path(
+    start_state: State,
+    end_position: Position,
+    maze: &Vec<Vec<u32>>,
+    min_steps: i32,
+    max_steps: i32,
+) -> Option<u32> {
     let mut distances: HashMap<Node, u32> = HashMap::new();
     let mut heap = BinaryHeap::new();
     distances.insert(start_state.node, 0);
@@ -244,7 +265,7 @@ fn find_path(start_state: State, end_position: Position, maze: &Vec<Vec<u32>>) -
         if &state.cost > distances.get(&state.node).unwrap_or(&u32::MAX) {
             continue;
         }
-        for neighboor in find_neighboors(&state, &maze) {
+        for neighboor in find_neighboors(&state, &maze, max_steps, min_steps) {
             if &neighboor.cost < distances.get(&neighboor.node).unwrap_or(&u32::MAX) {
                 heap.push(neighboor);
                 distances.insert(neighboor.node, neighboor.cost);
@@ -255,21 +276,34 @@ fn find_path(start_state: State, end_position: Position, maze: &Vec<Vec<u32>>) -
     return None;
 }
 
-fn find_neighboors(state: &State, maze: &Vec<Vec<u32>>) -> Vec<State> {
-    let top_neighboor = state.top_neighboor(maze);
-    let bottom_neighboor = state.bottom_neighboor(maze);
-    let left_neighboor = state.left_neighboor(maze);
-    let right_neighboor = state.right_neighboor(maze);
-    let neigbhoors = match (state.node.direction, state.node.current_steps_forward) {
-        (Direction::North, 10) => vec![left_neighboor, right_neighboor],
-        (Direction::North, _) => vec![left_neighboor, top_neighboor, right_neighboor],
-        (Direction::South, 10) => vec![left_neighboor, right_neighboor],
-        (Direction::South, _) => vec![left_neighboor, bottom_neighboor, right_neighboor],
-        (Direction::East, 10) => vec![top_neighboor, bottom_neighboor],
-        (Direction::East, _) => vec![top_neighboor, right_neighboor, bottom_neighboor],
-        (Direction::West, 10) => vec![top_neighboor, bottom_neighboor],
-        (Direction::West, _) => vec![top_neighboor, left_neighboor, bottom_neighboor],
-        (Direction::Start, _) => vec![
+fn find_neighboors(
+    state: &State,
+    maze: &Vec<Vec<u32>>,
+    max_steps: i32,
+    min_steps: i32,
+) -> Vec<State> {
+    let top_neighboor = state.top_neighboor(maze, min_steps);
+    let bottom_neighboor = state.bottom_neighboor(maze, min_steps);
+    let left_neighboor = state.left_neighboor(maze, min_steps);
+    let right_neighboor = state.right_neighboor(maze, min_steps);
+    let neigbhoors = match state.node.direction {
+        Direction::North if state.node.current_steps_forward == max_steps => {
+            vec![left_neighboor, right_neighboor]
+        }
+        Direction::North => vec![left_neighboor, top_neighboor, right_neighboor],
+        Direction::South if state.node.current_steps_forward == max_steps => {
+            vec![left_neighboor, right_neighboor]
+        }
+        Direction::South => vec![left_neighboor, bottom_neighboor, right_neighboor],
+        Direction::East if state.node.current_steps_forward == max_steps => {
+            vec![top_neighboor, bottom_neighboor]
+        }
+        Direction::East => vec![top_neighboor, right_neighboor, bottom_neighboor],
+        Direction::West if state.node.current_steps_forward == max_steps => {
+            vec![top_neighboor, bottom_neighboor]
+        }
+        Direction::West => vec![top_neighboor, left_neighboor, bottom_neighboor],
+        Direction::Start => vec![
             top_neighboor,
             left_neighboor,
             bottom_neighboor,

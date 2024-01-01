@@ -1,6 +1,4 @@
-use std::collections::{HashSet, VecDeque};
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 enum Direction {
     Up,
     Down,
@@ -8,123 +6,72 @@ enum Direction {
     Left,
 }
 
-#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
+#[derive(Clone, Copy)]
 struct Position {
-    row: i32,
-    column: i32,
+    row: i64,
+    column: i64,
 }
 
-enum Square {
-    Trench,
-    GroundLevel,
-}
-
-#[derive(Debug)]
 struct Command {
     direction: Direction,
-    count: u64,
+    count: i64,
 }
 
 pub fn solve_part1(input: &str) -> String {
     let commands = parse(input);
-    let borders = generate_borders(&commands);
-    // plot(&borders);
-    let filled = fill(&borders);
-    // plot(&filled);
-    return filled.len().to_string();
+    return solve(&commands).to_string();
 }
 
-fn generate_borders(commands: &Vec<Command>) -> HashSet<Position> {
-    let mut points: HashSet<Position> = HashSet::new();
+pub fn solve_part2(input: &str) -> String {
+    let commands = parse_hex(input);
+    return solve(&commands).to_string();
+}
+
+fn solve(commands: &Vec<Command>) -> i64 {
+    let vertices = get_polygon_vertices(&commands);
+    let border_length: i64 = commands.iter().map(|command| command.count).sum();
+    return (apply_shoelace_formula(&vertices) - border_length / 2 + 1) + border_length;
+}
+
+fn get_polygon_vertices(commands: &Vec<Command>) -> Vec<Position> {
+    let mut points: Vec<Position> = Vec::new();
     let mut current_point = Position { row: 0, column: 0 };
-    points.insert(current_point);
     for command in commands {
-        for _ in 0..command.count {
-            current_point = move_point(current_point, command.direction);
-            points.insert(current_point);
-        }
+        current_point = move_point(current_point, command.direction, command.count);
+        points.push(current_point);
     }
     return points;
 }
 
-fn fill(borders: &HashSet<Position>) -> HashSet<Position> {
-    let mut points = borders.clone();
-    let mut queue = VecDeque::new();
-    // TODO: remove arbitrary numbers
-    let start_point = Position {
-        row: -100,
-        column: 100,
-    };
-    queue.push_back(start_point);
-
-    while let Some(point) = queue.pop_front() {
-        points.insert(point);
-        for row in (point.row - 1)..=(point.row + 1) {
-            for column in (point.column - 1)..=(point.column + 1) {
-                if !points.contains(&Position { row, column }) {
-                    queue.push_back(Position { row, column });
-                    points.insert(Position { row, column });
-                }
-            }
-        }
+fn apply_shoelace_formula(vertices: &Vec<Position>) -> i64 {
+    let mut area = 0;
+    let mut j = vertices.len() - 1;
+    for i in 0..vertices.len() {
+        area += (vertices[j].row + vertices[i].row) * (vertices[j].column - vertices[i].column);
+        j = i;
     }
-
-    return points;
+    return (area / 2).abs();
 }
 
-fn move_point(point: Position, direction: Direction) -> Position {
+fn move_point(point: Position, direction: Direction, count: i64) -> Position {
     return match direction {
         Direction::Up => Position {
-            row: point.row - 1,
+            row: point.row - count,
             column: point.column,
         },
         Direction::Down => Position {
-            row: point.row + 1,
+            row: point.row + count,
             column: point.column,
         },
         Direction::Right => Position {
             row: point.row,
-            column: point.column + 1,
+            column: point.column + count,
         },
         Direction::Left => Position {
             row: point.row,
-            column: point.column - 1,
+            column: point.column - count,
         },
     };
-}
-
-fn plot(points: &HashSet<Position>) {
-    for row in min_row(&points)..=max_row(&points) {
-        for column in min_column(&points)..=max_column(&points) {
-            if points.contains(&Position { row, column }) {
-                print!("#")
-            } else {
-                print!(".")
-            }
-        }
-        println!("");
-    }
-    println!("");
-}
-
-fn min_row(points: &HashSet<Position>) -> i32 {
-    return points.iter().map(|position| position.row).min().unwrap();
-}
-
-fn min_column(points: &HashSet<Position>) -> i32 {
-    return points.iter().map(|position| position.column).min().unwrap();
-}
-
-fn max_row(points: &HashSet<Position>) -> i32 {
-    return points.iter().map(|position| position.row).max().unwrap();
-}
-
-fn max_column(points: &HashSet<Position>) -> i32 {
-    return points.iter().map(|position| position.column).max().unwrap();
-}
-
-pub fn solve_part2(input: &str) -> String {
-    return input.to_string();
 }
 
 fn parse(input: &str) -> Vec<Command> {
@@ -142,5 +89,25 @@ fn parse_command(input: &str) -> Command {
             _ => panic!(),
         },
         count: parts[1].parse().unwrap(),
+    };
+}
+
+fn parse_hex(input: &str) -> Vec<Command> {
+    return input.lines().map(parse_command_hex).collect();
+}
+
+fn parse_command_hex(input: &str) -> Command {
+    let hex_string = input.split(" ").last().unwrap();
+    let count_hex = &hex_string[2..hex_string.len() - 2];
+    let direction_hex = &hex_string[hex_string.len() - 2..hex_string.len() - 1];
+    return Command {
+        direction: match direction_hex {
+            "0" => Direction::Right,
+            "1" => Direction::Down,
+            "2" => Direction::Left,
+            "3" => Direction::Up,
+            _ => panic!(),
+        },
+        count: i64::from_str_radix(count_hex, 16).unwrap(),
     };
 }

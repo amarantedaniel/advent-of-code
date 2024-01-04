@@ -34,32 +34,28 @@ impl VariableRanges {
     }
 
     fn setting(&self, variable: &Variable, value: Range) -> VariableRanges {
-        match variable {
-            Variable::X => VariableRanges {
-                x: value,
-                m: self.m,
-                a: self.a,
-                s: self.s,
+        return VariableRanges {
+            x: if variable == &Variable::X {
+                value
+            } else {
+                self.x
             },
-            Variable::M => VariableRanges {
-                x: self.x,
-                m: value,
-                a: self.a,
-                s: self.s,
+            m: if variable == &Variable::M {
+                value
+            } else {
+                self.m
             },
-            Variable::A => VariableRanges {
-                x: self.x,
-                m: self.m,
-                a: value,
-                s: self.s,
+            a: if variable == &Variable::A {
+                value
+            } else {
+                self.a
             },
-            Variable::S => VariableRanges {
-                x: self.x,
-                m: self.m,
-                a: self.a,
-                s: value,
+            s: if variable == &Variable::S {
+                value
+            } else {
+                self.s
             },
-        }
+        };
     }
 
     fn get(&self, variable: &Variable) -> Range {
@@ -179,17 +175,15 @@ fn solve(
             if !compare(variable_value, operation.comparator, operation.operator) {
                 return solve(&workflow[1..].to_vec(), workflows, variables);
             }
-            match &operation.output {
-                Reference(id) => return solve(&workflows[id], workflows, variables),
-                Approve => return true,
-                Reject => return false,
-            }
+            return match &operation.output {
+                Reference(id) => solve(&workflows[id], workflows, variables),
+                Approve => true,
+                Reject => false,
+            };
         }
-        Variable(Reference(id)) => {
-            return solve(&workflows[id], workflows, variables);
-        }
-        Variable(Approve) => return true,
-        Variable(Reject) => return false,
+        Variable(Reference(id)) => solve(&workflows[id], workflows, variables),
+        Variable(Approve) => true,
+        Variable(Reject) => false,
     }
 }
 
@@ -221,24 +215,20 @@ fn count_possibilities(
                 ranges.setting(&operation.variable, loser),
                 workflows,
             );
-            match &operation.output {
-                Reference(id) => {
-                    return recursion
-                        + count_possibilities(
-                            &workflows[id],
-                            ranges.setting(&operation.variable, winner),
-                            workflows,
-                        )
-                }
-                Approve => recursion + ranges.setting(&operation.variable, winner).count(),
-                Reject => return recursion,
-            }
+            return recursion
+                + match &operation.output {
+                    Reference(id) => count_possibilities(
+                        &workflows[id],
+                        ranges.setting(&operation.variable, winner),
+                        workflows,
+                    ),
+                    Approve => ranges.setting(&operation.variable, winner).count(),
+                    Reject => 0,
+                };
         }
-        Variable(Reference(id)) => {
-            return count_possibilities(&workflows[id], ranges, workflows);
-        }
-        Variable(Approve) => return ranges.count(),
-        Variable(Reject) => return 0,
+        Variable(Reference(id)) => count_possibilities(&workflows[id], ranges, workflows),
+        Variable(Approve) => ranges.count(),
+        Variable(Reject) => 0,
     }
 }
 

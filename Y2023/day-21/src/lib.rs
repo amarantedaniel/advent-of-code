@@ -62,24 +62,6 @@ impl Position {
     }
 }
 
-fn print_map(map: &Vec<Vec<Square>>, positions: &HashSet<Position>) {
-    for (i, row) in map.iter().enumerate() {
-        for (column, square) in row.iter().enumerate() {
-            if positions.contains(&Position { row: i, column }) {
-                print!("O");
-            } else {
-                match square {
-                    Square::Start => print!("."),
-                    Square::Garden => print!("."),
-                    Square::Rock => print!("#"),
-                }
-            }
-        }
-        println!("");
-    }
-    println!("");
-}
-
 pub fn solve_part1(input: &str) -> String {
     let map = parse(input);
     let mut positions = HashSet::new();
@@ -94,7 +76,7 @@ pub fn solve_part2(input: &str) -> String {
     let map = parse(input);
     let mut positions = HashSet::new();
     positions.insert(InfinitePosition::from(find_start_position(&map)));
-    for _ in 0..10 {
+    for _ in 0..100 {
         positions = take_infinite_step(&positions, &map);
     }
     return positions.len().to_string();
@@ -159,20 +141,25 @@ fn normalize(position: &InfinitePosition, map: &Vec<Vec<Square>>) -> Position {
     let row = if position.row >= 0 {
         position.row % (map.len() as i32)
     } else {
-        (map.len() as i32) + (position.row % (map.len() as i32))
+        if position.row % (map.len() as i32) == 0 {
+            0
+        } else {
+            (map.len() as i32) + (position.row % (map.len() as i32))
+        }
     };
     let column = if position.column >= 0 {
         position.column % (map[0].len() as i32)
     } else {
-        (map[0].len() as i32) + (position.column % (map[0].len() as i32))
+        if position.column % (map[0].len() as i32) == 0 {
+            0
+        } else {
+            (map[0].len() as i32) + (position.column % (map[0].len() as i32))
+        }
     };
-    let result = Position {
+    return Position {
         row: row as usize,
         column: column as usize,
     };
-    println!("{:?}", position);
-    println!("{:?}", result);
-    return result;
 }
 
 fn take_step(positions: &HashSet<Position>, map: &Vec<Vec<Square>>) -> HashSet<Position> {

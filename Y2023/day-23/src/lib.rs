@@ -1,5 +1,3 @@
-use std::cmp;
-
 #[derive(Debug, Clone, Copy)]
 struct Position {
     row: usize,
@@ -83,73 +81,68 @@ enum Square {
     Goal,
 }
 
-fn print_maze(maze: &Vec<Vec<Square>>) {
-    for i in 0..maze.len() {
-        for j in 0..maze[i].len() {
-            match maze[i][j] {
-                Square::Path { visited: true } => print!("O"),
-                Square::Path { visited: false } => print!("."),
-                Square::Forest => print!("#"),
-                Square::Slope(Direction::North) => print!("^"),
-                Square::Slope(Direction::East) => print!(">"),
-                Square::Slope(Direction::South) => print!("v"),
-                Square::Slope(Direction::West) => print!("<"),
-                Square::Goal => print!("."),
-            }
-        }
-        println!("");
-    }
-    println!("");
-}
-
 pub fn solve_part1(input: &str) -> String {
-    let mut maze = parse(input);
-    let height = maze.len();
-    let width = maze[0].len();
-    maze[height - 1][width - 1] = Square::Goal;
+    let mut maze = parse(input, true);
     let result = hike(Position { row: 0, column: 1 }, &mut maze);
-    return result.to_string();
-}
-
-fn hike(position: Position, maze: &mut Vec<Vec<Square>>) -> u64 {
-    match maze[position.row][position.column] {
-        Square::Slope(direction) => {
-            return 1 + hike(position.neighboor(&direction, maze).unwrap(), maze)
-        }
-        Square::Path { visited: false } => {
-            maze[position.row][position.column] = Square::Path { visited: true };
-            let mut count = 0;
-            for neighboor in position.neighboors(maze) {
-                let attempt = match maze[neighboor.row][neighboor.column] {
-                    Square::Path { visited: false } | Square::Slope(_) => 1 + hike(neighboor, maze),
-                    _ => 0,
-                };
-                count = cmp::max(count, attempt)
-            }
-            maze[position.row][position.column] = Square::Path { visited: false };
-            return count;
-        }
-        Square::Goal => {
-            maze[position.row][position.column] = Square::Path { visited: false };
-            return 1;
-        }
-        _ => return 0,
-    }
+    return result.map(|result| result - 1).unwrap().to_string();
 }
 
 pub fn solve_part2(input: &str) -> String {
-    return input.to_string();
+    let mut maze = parse(input, false);
+    let result = hike(Position { row: 0, column: 1 }, &mut maze);
+    return result.map(|result| result - 1).unwrap().to_string();
 }
 
-fn parse(input: &str) -> Vec<Vec<Square>> {
-    input.lines().map(parse_line).collect()
+fn hike(position: Position, maze: &mut Vec<Vec<Square>>) -> Option<u64> {
+    match maze[position.row][position.column] {
+        Square::Slope(direction) => {
+            return hike(position.neighboor(&direction, maze).unwrap(), maze)
+                .map(|path_size: u64| path_size + 1);
+        }
+        Square::Path { visited: false } => {
+            maze[position.row][position.column] = Square::Path { visited: true };
+            let largest_path_size = position
+                .neighboors(maze)
+                .iter()
+                .filter_map(|neighboor| match maze[neighboor.row][neighboor.column] {
+                    Square::Path { visited: false } | Square::Slope(_) | Square::Goal => {
+                        hike(*neighboor, maze).map(|path_size| path_size + 1)
+                    }
+                    _ => None,
+                })
+                .max();
+            maze[position.row][position.column] = Square::Path { visited: false };
+            return largest_path_size;
+        }
+        Square::Goal => return Some(0),
+        _ => return None,
+    }
 }
 
-fn parse_line(line: &str) -> Vec<Square> {
-    line.chars().map(parse_char).collect()
+fn parse(input: &str, include_slopes: bool) -> Vec<Vec<Square>> {
+    let mut maze = input
+        .lines()
+        .map(|line| parse_line(line, include_slopes))
+        .collect::<Vec<Vec<Square>>>();
+    let height = maze.len();
+    let width = maze[0].len();
+    maze[height - 1][width - 1] = Square::Goal;
+    return maze;
 }
 
-fn parse_char(character: char) -> Square {
+fn parse_line(line: &str, include_slopes: bool) -> Vec<Square> {
+    line.chars()
+        .map(|char| {
+            if include_slopes {
+                parse_char_including_slopes(char)
+            } else {
+                parse_char_ignoring_slopes(char)
+            }
+        })
+        .collect()
+}
+
+fn parse_char_including_slopes(character: char) -> Square {
     match character {
         '.' => Square::Path { visited: false },
         '#' => Square::Forest,
@@ -157,6 +150,18 @@ fn parse_char(character: char) -> Square {
         '>' => Square::Slope(Direction::East),
         'v' => Square::Slope(Direction::South),
         '<' => Square::Slope(Direction::West),
+        _ => panic!(),
+    }
+}
+
+fn parse_char_ignoring_slopes(character: char) -> Square {
+    match character {
+        '.' => Square::Path { visited: false },
+        '#' => Square::Forest,
+        '^' => Square::Path { visited: false },
+        '>' => Square::Path { visited: false },
+        'v' => Square::Path { visited: false },
+        '<' => Square::Path { visited: false },
         _ => panic!(),
     }
 }

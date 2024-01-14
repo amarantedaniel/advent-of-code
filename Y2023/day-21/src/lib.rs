@@ -64,12 +64,48 @@ impl Position {
 
 pub fn solve_part1(input: &str) -> String {
     let map = parse(input);
+    let mut even_positions: HashSet<Position> = HashSet::new();
+    let mut all_visited_positions: HashSet<Position> = HashSet::new();
     let mut positions = HashSet::new();
     positions.insert(find_start_position(&map));
-    for _ in 0..64 {
-        positions = take_step(&positions, &map);
+    for i in 0..64 {
+        if i % 2 == 0 {
+            even_positions.extend(&positions);
+        }
+        all_visited_positions.extend(&positions);
+        positions = take_step(&positions, &all_visited_positions, &map);
     }
-    return positions.len().to_string();
+    return (positions.len() + even_positions.len()).to_string();
+}
+
+fn take_step(
+    positions: &HashSet<Position>,
+    past_positions: &HashSet<Position>,
+    map: &Vec<Vec<Square>>,
+) -> HashSet<Position> {
+    positions
+        .iter()
+        .map(|position| walkable_neighboors(*position, past_positions, map))
+        .flatten()
+        .collect()
+}
+
+fn walkable_neighboors(
+    position: Position,
+    past_positions: &HashSet<Position>,
+    map: &Vec<Vec<Square>>,
+) -> HashSet<Position> {
+    vec![
+        position.above(),
+        position.below(map.len()),
+        position.left(),
+        position.right(map[0].len()),
+    ]
+    .iter()
+    .filter_map(|position| *position)
+    .filter(|position| !past_positions.contains(&position))
+    .filter(|position| map[position.row][position.column] != Square::Rock)
+    .collect()
 }
 
 pub fn solve_part2(input: &str) -> String {
@@ -160,27 +196,6 @@ fn normalize(position: &InfinitePosition, map: &Vec<Vec<Square>>) -> Position {
         row: row as usize,
         column: column as usize,
     };
-}
-
-fn take_step(positions: &HashSet<Position>, map: &Vec<Vec<Square>>) -> HashSet<Position> {
-    positions
-        .iter()
-        .map(|position| walkable_neighboors(*position, map))
-        .flatten()
-        .collect()
-}
-
-fn walkable_neighboors(position: Position, map: &Vec<Vec<Square>>) -> HashSet<Position> {
-    vec![
-        position.above(),
-        position.below(map.len()),
-        position.left(),
-        position.right(map[0].len()),
-    ]
-    .iter()
-    .filter_map(|position| *position)
-    .filter(|position| map[position.row][position.column] != Square::Rock)
-    .collect()
 }
 
 fn parse(input: &str) -> Vec<Vec<Square>> {

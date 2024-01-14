@@ -28,6 +28,23 @@ impl InfinitePosition {
     }
 }
 
+fn print_map(map: &Vec<Vec<Square>>, positions: &HashSet<Position>) {
+    for i in 0..map.len() {
+        for j in 0..map.len() {
+            if positions.contains(&Position { row: i, column: j }) {
+                print!("O");
+                continue;
+            }
+            match map[i][j] {
+                Square::Start | Square::Garden => print!("."),
+                Square::Rock => print!("#"),
+            }
+        }
+        println!("");
+    }
+    println!("");
+}
+
 impl Position {
     fn above(&self) -> Option<Position> {
         return self.row.checked_sub(1).map(|row| Position {
@@ -111,11 +128,17 @@ fn walkable_neighboors(
 pub fn solve_part2(input: &str) -> String {
     let map = parse(input);
     let mut positions = HashSet::new();
+    let mut even_positions: HashSet<InfinitePosition> = HashSet::new();
+    let mut all_visited_positions: HashSet<InfinitePosition> = HashSet::new();
     positions.insert(InfinitePosition::from(find_start_position(&map)));
-    for _ in 0..100 {
-        positions = take_infinite_step(&positions, &map);
+    for i in 0..5000 {
+        if i % 2 == 0 {
+            even_positions.extend(&positions);
+        }
+        all_visited_positions.extend(&positions);
+        positions = take_infinite_step(&positions, &all_visited_positions, &map);
     }
-    return positions.len().to_string();
+    return (positions.len() + even_positions.len()).to_string();
 }
 
 fn find_start_position(map: &Vec<Vec<Square>>) -> Position {
@@ -131,17 +154,19 @@ fn find_start_position(map: &Vec<Vec<Square>>) -> Position {
 
 fn take_infinite_step(
     positions: &HashSet<InfinitePosition>,
+    past_positions: &HashSet<InfinitePosition>,
     map: &Vec<Vec<Square>>,
 ) -> HashSet<InfinitePosition> {
     positions
         .iter()
-        .map(|position| infinite_walkable_neighboors(*position, map))
+        .map(|position| infinite_walkable_neighboors(*position, past_positions, map))
         .flatten()
         .collect()
 }
 
 fn infinite_walkable_neighboors(
     position: InfinitePosition,
+    past_positions: &HashSet<InfinitePosition>,
     map: &Vec<Vec<Square>>,
 ) -> HashSet<InfinitePosition> {
     vec![
@@ -164,6 +189,7 @@ fn infinite_walkable_neighboors(
     ]
     .iter()
     .map(|position| *position)
+    .filter(|position| !past_positions.contains(&position))
     .filter(|position| get(position, map) != Square::Rock)
     .collect()
 }

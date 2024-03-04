@@ -1,6 +1,6 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, hash::Hash};
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Square {
     Start,
     Garden,
@@ -13,24 +13,9 @@ struct Position {
     column: usize,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
-struct InfinitePosition {
-    row: i32,
-    column: i32,
-}
-
-impl InfinitePosition {
-    fn from(position: Position) -> InfinitePosition {
-        InfinitePosition {
-            row: position.row as i32,
-            column: position.column as i32,
-        }
-    }
-}
-
 fn print_map(map: &Vec<Vec<Square>>, positions: &HashSet<Position>) {
     for i in 0..map.len() {
-        for j in 0..map.len() {
+        for j in 0..map[i].len() {
             if positions.contains(&Position { row: i, column: j }) {
                 print!("O");
                 continue;
@@ -81,18 +66,40 @@ impl Position {
 
 pub fn solve_part1(input: &str) -> String {
     let map = parse(input);
+    let start_position = Position {
+        row: map.len() / 2,
+        column: map.len() / 2,
+    };
+    let (even_positions, _) = reachable_positions(start_position, &map, 64);
+    return even_positions.to_string();
+}
+
+fn reachable_positions(
+    start_position: Position,
+    map: &Vec<Vec<Square>>,
+    limit: i32,
+) -> (usize, usize) {
     let mut even_positions: HashSet<Position> = HashSet::new();
+    let mut odd_positions: HashSet<Position> = HashSet::new();
     let mut all_visited_positions: HashSet<Position> = HashSet::new();
     let mut positions = HashSet::new();
-    positions.insert(find_start_position(&map));
-    for i in 0..64 {
+    positions.insert(start_position);
+    even_positions.insert(start_position);
+    all_visited_positions.insert(start_position);
+    for i in 1..=limit {
+        if positions.is_empty() {
+            break;
+        }
+        positions = take_step(&positions, &all_visited_positions, &map);
         if i % 2 == 0 {
             even_positions.extend(&positions);
+        } else {
+            odd_positions.extend(&positions);
         }
         all_visited_positions.extend(&positions);
-        positions = take_step(&positions, &all_visited_positions, &map);
     }
-    return (positions.len() + even_positions.len()).to_string();
+
+    return (even_positions.len(), odd_positions.len());
 }
 
 fn take_step(
@@ -126,102 +133,49 @@ fn walkable_neighboors(
 }
 
 pub fn solve_part2(input: &str) -> String {
+    let steps = 26501365;
     let map = parse(input);
-    let mut positions = HashSet::new();
-    let mut even_positions: HashSet<InfinitePosition> = HashSet::new();
-    let mut all_visited_positions: HashSet<InfinitePosition> = HashSet::new();
-    positions.insert(InfinitePosition::from(find_start_position(&map)));
-    for i in 0..5000 {
-        if i % 2 == 0 {
-            even_positions.extend(&positions);
-        }
-        all_visited_positions.extend(&positions);
-        positions = take_infinite_step(&positions, &all_visited_positions, &map);
-    }
-    return (positions.len() + even_positions.len()).to_string();
-}
-
-fn find_start_position(map: &Vec<Vec<Square>>) -> Position {
-    for row in 0..map.len() {
-        for column in 0..map[row].len() {
-            if map[row][column] == Square::Start {
-                return Position { row, column };
-            }
-        }
-    }
-    panic!()
-}
-
-fn take_infinite_step(
-    positions: &HashSet<InfinitePosition>,
-    past_positions: &HashSet<InfinitePosition>,
-    map: &Vec<Vec<Square>>,
-) -> HashSet<InfinitePosition> {
-    positions
-        .iter()
-        .map(|position| infinite_walkable_neighboors(*position, past_positions, map))
-        .flatten()
-        .collect()
-}
-
-fn infinite_walkable_neighboors(
-    position: InfinitePosition,
-    past_positions: &HashSet<InfinitePosition>,
-    map: &Vec<Vec<Square>>,
-) -> HashSet<InfinitePosition> {
-    vec![
-        InfinitePosition {
-            row: position.row - 1,
-            column: position.column,
-        },
-        InfinitePosition {
-            row: position.row + 1,
-            column: position.column,
-        },
-        InfinitePosition {
-            row: position.row,
-            column: position.column - 1,
-        },
-        InfinitePosition {
-            row: position.row,
-            column: position.column + 1,
-        },
-    ]
-    .iter()
-    .map(|position| *position)
-    .filter(|position| !past_positions.contains(&position))
-    .filter(|position| get(position, map) != Square::Rock)
-    .collect()
-}
-
-fn get(position: &InfinitePosition, map: &Vec<Vec<Square>>) -> Square {
-    let normalized = normalize(position, map);
-    return map[normalized.row][normalized.column];
-}
-
-fn normalize(position: &InfinitePosition, map: &Vec<Vec<Square>>) -> Position {
-    let row = if position.row >= 0 {
-        position.row % (map.len() as i32)
-    } else {
-        if position.row % (map.len() as i32) == 0 {
-            0
-        } else {
-            (map.len() as i32) + (position.row % (map.len() as i32))
-        }
+    let middle_position = Position {
+        row: map.len() / 2,
+        column: map.len() / 2,
     };
-    let column = if position.column >= 0 {
-        position.column % (map[0].len() as i32)
-    } else {
-        if position.column % (map[0].len() as i32) == 0 {
-            0
-        } else {
-            (map[0].len() as i32) + (position.column % (map[0].len() as i32))
-        }
+    let middle_bottom_position = Position {
+        row: map.len() - 1,
+        column: map.len() / 2,
     };
-    return Position {
-        row: row as usize,
-        column: column as usize,
+    let middle_top_position = Position {
+        row: 0,
+        column: map.len() / 2,
     };
+    let middle_left_position = Position {
+        row: map.len() / 2,
+        column: 0,
+    };
+    let middle_right_position = Position {
+        row: map.len() / 2,
+        column: map.len() - 1,
+    };
+    let (even_positions, odd_positions) = reachable_positions(middle_position, &map, i32::MAX);
+
+    let grids_length = (steps / map.len()) - 1;
+    let odd_grids = (grids_length / 2 * 2 + 1).pow(2);
+    let even_grids = ((grids_length + 1) / 2 * 2).pow(2);
+
+    let (_, top_grid) = reachable_positions(middle_bottom_position, &map, map.len() as i32 - 1);
+    let (_, bottom_grid) = reachable_positions(middle_top_position, &map, map.len() as i32 - 1);
+    let (_, right_grid) = reachable_positions(middle_left_position, &map, map.len() as i32 - 1);
+    let (_, left_grid) = reachable_positions(middle_right_position, &map, map.len() as i32 - 1);
+
+    let result = (odd_grids * odd_positions)
+        + (even_grids * even_positions)
+        + top_grid
+        + bottom_grid
+        + right_grid
+        + left_grid;
+
+    println!("{}", result);
+
+    return "".to_string();
 }
 
 fn parse(input: &str) -> Vec<Vec<Square>> {

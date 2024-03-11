@@ -1,11 +1,13 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "Y2022",
+    platforms: [.macOS(.v13)],
     products: [
+        .library(name: "AdventDay", targets: ["AdventDay"]),
         .library(name: "Day01", targets: ["Day01"]),
         .library(name: "Day02", targets: ["Day02"]),
         .library(name: "Day03", targets: ["Day03"]),
@@ -33,11 +35,25 @@ let package = Package(
         .library(name: "Day25", targets: ["Day25"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-collections.git", branch: "release/1.1")
+        .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.1.0")),
+        .package(url: "https://github.com/apple/swift-argument-parser.git", .upToNextMajor(from: "1.3.0"))
     ],
     targets: [
-        .target(name: "Day01", dependencies: []),
-        .target(name: "Day02", dependencies: []),
+        .executableTarget(name: "AdventOfCode", dependencies: [
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            .target(name: "AdventDay"),
+            .target(name: "Day01"),
+            .target(name: "Day02")
+        ], resources: [
+            .process("Input")
+        ]),
+        .target(name: "AdventDay", dependencies: []),
+        .target(name: "Day01", dependencies: [
+            .target(name: "AdventDay")
+        ]),
+        .target(name: "Day02", dependencies: [
+            .target(name: "AdventDay")
+        ]),
         .target(name: "Day03", dependencies: []),
         .target(name: "Day04", dependencies: []),
         .target(name: "Day05", dependencies: []),
@@ -64,31 +80,6 @@ let package = Package(
         .target(name: "Day22", dependencies: []),
         .target(name: "Day23", dependencies: []),
         .target(name: "Day24", dependencies: []),
-        .target(name: "Day25", dependencies: []),
-        .testTarget(name: "Day01Tests", dependencies: ["Day01"], resources: [.process("Input")]),
-        .testTarget(name: "Day02Tests", dependencies: ["Day02"], resources: [.process("Input")]),
-        .testTarget(name: "Day03Tests", dependencies: ["Day03"], resources: [.process("Input")]),
-        .testTarget(name: "Day04Tests", dependencies: ["Day04"], resources: [.process("Input")]),
-        .testTarget(name: "Day05Tests", dependencies: ["Day05"], resources: [.process("Input")]),
-        .testTarget(name: "Day06Tests", dependencies: ["Day06"], resources: [.process("Input")]),
-        .testTarget(name: "Day07Tests", dependencies: ["Day07"], resources: [.process("Input")]),
-        .testTarget(name: "Day08Tests", dependencies: ["Day08"], resources: [.process("Input")]),
-        .testTarget(name: "Day09Tests", dependencies: ["Day09"], resources: [.process("Input")]),
-        .testTarget(name: "Day10Tests", dependencies: ["Day10"], resources: [.process("Input")]),
-        .testTarget(name: "Day11Tests", dependencies: ["Day11"], resources: [.process("Input")]),
-        .testTarget(name: "Day12Tests", dependencies: ["Day12"], resources: [.process("Input")]),
-        .testTarget(name: "Day13Tests", dependencies: ["Day13"], resources: [.process("Input")]),
-        .testTarget(name: "Day14Tests", dependencies: ["Day14"], resources: [.process("Input")]),
-        .testTarget(name: "Day15Tests", dependencies: ["Day15"], resources: [.process("Input")]),
-        .testTarget(name: "Day16Tests", dependencies: ["Day16"], resources: [.process("Input")]),
-        .testTarget(name: "Day17Tests", dependencies: ["Day17"], resources: [.process("Input")]),
-        .testTarget(name: "Day18Tests", dependencies: ["Day18"], resources: [.process("Input")]),
-        .testTarget(name: "Day19Tests", dependencies: ["Day19"], resources: [.process("Input")]),
-        .testTarget(name: "Day20Tests", dependencies: ["Day20"], resources: [.process("Input")]),
-        .testTarget(name: "Day21Tests", dependencies: ["Day21"], resources: [.process("Input")]),
-        .testTarget(name: "Day22Tests", dependencies: ["Day22"], resources: [.process("Input")]),
-        .testTarget(name: "Day23Tests", dependencies: ["Day23"], resources: [.process("Input")]),
-        .testTarget(name: "Day24Tests", dependencies: ["Day24"], resources: [.process("Input")]),
-        .testTarget(name: "Day25Tests", dependencies: ["Day25"], resources: [.process("Input")]),
+        .target(name: "Day25", dependencies: [])
     ]
 )

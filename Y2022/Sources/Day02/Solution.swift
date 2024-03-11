@@ -1,3 +1,4 @@
+import AdventDay
 import Foundation
 
 enum Move: Int {
@@ -74,34 +75,38 @@ struct Match {
     }
 }
 
-private func parse2(input: String) -> [Match] {
-    input
-        .split(separator: "\n")
-        .map { line in
-            let characters = line.split(separator: " ")
-            let move = Move(text: characters[0])
-            let result = Result(text: characters[1])
-            return Match(oponent: move, result: result)
-        }
-}
+public struct Day02: AdventDay {
+    public init() {}
 
-private func parse(input: String) -> [Match] {
-    input
-        .split(separator: "\n")
-        .map { line in
-            line.split(separator: " ").map(Move.init(text:))
-        }
-        .map { moves in
-            Match(oponent: moves[0], player: moves[1])
-        }
-}
+    public func part1(input: String) -> Int {
+        parse(input: input)
+            .reduce(0) { $0 + $1.calculate() }
+    }
 
-func solve1(input: String) -> Int {
-    parse(input: input)
-        .reduce(0) { $0 + $1.calculate() }
-}
+    public func part2(input: String) -> Int {
+        parse2(input: input)
+            .reduce(0) { $0 + $1.calculate() }
+    }
 
-func solve2(input: String) -> Int {
-    parse2(input: input)
-        .reduce(0) { $0 + $1.calculate() }
+    private func parse(input: String) -> [Match] {
+        input
+            .split(separator: "\n")
+            .map { line in
+                line.split(separator: " ").map(Move.init(text:))
+            }
+            .map { moves in
+                Match(oponent: moves[0], player: moves[1])
+            }
+    }
+
+    private func parse2(input: String) -> [Match] {
+        input
+            .split(separator: "\n")
+            .map { line in
+                let characters = line.split(separator: " ")
+                let move = Move(text: characters[0])
+                let result = Result(text: characters[1])
+                return Match(oponent: move, result: result)
+            }
+    }
 }

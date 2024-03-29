@@ -8,8 +8,9 @@ struct DaySelector {
         Day02()
     ]
 
-    func get(_ number: Int) throws -> any AdventDay {
+    func get(_ number: Int?) throws -> [any AdventDay] {
+        guard let number else { return all }
         guard 1...25 ~= number else { throw AdventError.invalidDay }
-        return all[number - 1]
+        return [all[number - 1]]
     }
 }

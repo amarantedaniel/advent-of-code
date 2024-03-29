@@ -14,35 +14,24 @@ struct AdventDayRunner<Day: AdventDay> {
         self.input = input
     }
 
-    func run(part: Part) {
-        print("Running day \(day.name)")
+    func run(part: Part) -> Result<AdventDayResult, Error> {
         switch part {
         case .part1:
-            runPart1()
+            return runAndMeasure(block: { try day.part1(input: input) })
         case .part2:
-            runPart2()
-        case .both:
-            runPart1()
-            runPart2()
+            return runAndMeasure(block: { try day.part2(input: input) })
         }
     }
 
-    func runPart1() {
-
+    func runAndMeasure(block: () throws -> Day.Output) -> Result<AdventDayResult, Error> {
         do {
-            let result = try day.part1(input: input)
-            print("Part 1: \(result)")
+            var result: Day.Output!
+            let time = try ContinuousClock().measure {
+                result = try block()
+            }
+            return .success(.init(result: result.description, duration: time))
         } catch {
-            print("Part 1: \(error)")
-        }
-    }
-
-    func runPart2() {
-        do {
-            let result = try day.part2(input: input)
-            print("Part 2: \(result)")
-        } catch {
-            print("Part 2: \(error)")
+            return .failure(error)
         }
     }
 }

@@ -1,6 +1,4 @@
-import Foundation
-
-enum AdventError: Error {
-    case invalidDay
-    case missingInput
+public enum AdventError: Error {
+    case notImplemented
+    case fileNotFound
 }

@@ -1,3 +1,11 @@
+//
+//  Parser.swift
+//  Y2022
+//
+//  Created by Daniel Amarante on 2024-11-01.
+//
+
+
 import Foundation
 
 enum Parser {

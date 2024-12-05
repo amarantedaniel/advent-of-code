@@ -1,4 +1,5 @@
 import AdventOfCode
+
 enum Letter: Character {
     case x = "X"
     case m = "M"

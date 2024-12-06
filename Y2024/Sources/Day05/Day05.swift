@@ -1,18 +1,33 @@
 import AdventOfCode
 
+struct Page: Comparable {
+    let value: Int
+    let isLargerThan: [Int]
+
+    static func < (lhs: Page, rhs: Page) -> Bool {
+        rhs.isLargerThan.contains(lhs.value)
+    }
+}
+
 struct Day05: AdventDay {
-    private func parse(input: String) -> ([Int: [Int]], [[Int]]) {
+    private func parse(input: String) -> [[Page]] {
         let parts = input.components(separatedBy: "\n\n")
-        return (
-            parse(rules: parts[0]),
-            parse(update: parts[1])
-        )
+        let rules = parse(rules: parts[0])
+        return parse(update: parts[1], rules: rules)
     }
 
-    private func parse(update: String) -> [[Int]] {
-        update.split(separator: "\n").map { line in
-            line.split(separator: ",").compactMap { Int($0) }
-        }
+    private func parse(update: String, rules: [Int: [Int]]) -> [[Page]] {
+        update
+            .split(separator: "\n")
+            .map { parse(line: $0, rules: rules) }
+    }
+
+    private func parse(line: Substring, rules: [Int: [Int]]) -> [Page] {
+        line.split(separator: ",")
+            .compactMap { Int($0) }
+            .map { number in
+                Page(value: number, isLargerThan: rules[number] ?? [])
+            }
     }
 
     private func parse(rules: String) -> [Int: [Int]] {
@@ -22,43 +37,24 @@ struct Day05: AdventDay {
         }
     }
 
-    private func sort(rules: [Int: [Int]], pages: inout [Int]) -> Bool {
-        var alreadySorted = true
-        for i in 0..<pages.count {
-            for j in i..<pages.count {
-                guard let numbers = rules[pages[i]] else {
-                    continue
-                }
-                if numbers.contains(pages[j]) {
-                    let aux = pages[i]
-                    pages[i] = pages[j]
-                    pages[j] = aux
-                    alreadySorted = false
-                }
-            }
-        }
-        return alreadySorted
-    }
-
     func part1(input: String) throws -> Int {
-        let (rules, update) = parse(input: input)
+        let update = parse(input: input)
         var result = 0
         for pages in update {
-            var pages = pages
-            if sort(rules: rules, pages: &pages) {
-                result += pages[pages.count / 2]
+            if pages == pages.sorted() {
+                result += pages[pages.count / 2].value
             }
         }
         return result
     }
 
     func part2(input: String) throws -> Int {
-        let (rules, update) = parse(input: input)
+        let update = parse(input: input)
         var result = 0
         for pages in update {
-            var pages = pages
-            if !sort(rules: rules, pages: &pages) {
-                result += pages[pages.count / 2]
+            let sorted = pages.sorted()
+            if pages != sorted {
+                result += sorted[pages.count / 2].value
             }
         }
         return result

@@ -11,50 +11,50 @@ struct Day07: AdventDay {
         }
     }
 
-    private func isValid1(result: Int, numbers: [Int]) -> Bool {
-        if numbers.count == 1 {
-            return numbers[0] == result
+    private func isValid1(result: Int, acc: Int, numbers: ArraySlice<Int>) -> Bool {
+        guard let first = numbers.first else {
+            return acc == result
         }
-        let sum = isValid1(
+        return isValid1(
             result: result,
-            numbers: [numbers[0] + numbers[1]] + numbers[2...]
-        )
-        let mul = isValid1(
+            acc: acc + first,
+            numbers: numbers.dropFirst()
+        ) || isValid1(
             result: result,
-            numbers: [numbers[0] * numbers[1]] + numbers[2...]
+            acc: acc * first,
+            numbers: numbers.dropFirst()
         )
-        return sum || mul
     }
 
-    private func isValid2(result: Int, numbers: [Int]) -> Bool {
-        if numbers.count == 1 {
-            return numbers[0] == result
+    private func isValid2(result: Int, acc: Int, numbers: ArraySlice<Int>) -> Bool {
+        guard let first = numbers.first else {
+            return acc == result
         }
-        let sum = isValid2(
+        return isValid2(
             result: result,
-            numbers: [numbers[0] + numbers[1]] + numbers[2...]
-        )
-        let mul = isValid2(
+            acc: acc + first,
+            numbers: numbers.dropFirst()
+        ) || isValid2(
             result: result,
-            numbers: [numbers[0] * numbers[1]] + numbers[2...]
-        )
-        let concat = isValid2(
+            acc: acc * first,
+            numbers: numbers.dropFirst()
+        ) || isValid2(
             result: result,
-            numbers: [Int("\(numbers[0])\(numbers[1])")!] + numbers[2...]
+            acc: Int("\(acc)\(first)")!,
+            numbers: numbers.dropFirst()
         )
-        return sum || mul || concat
     }
 
     func part1(input: String) throws -> Int {
         parse(input: input)
-            .filter { isValid1(result: $0.0, numbers: $0.1) }
+            .filter { isValid1(result: $0.0, acc: 0, numbers: $0.1[...]) }
             .map(\.0)
             .reduce(0, +)
     }
 
     func part2(input: String) throws -> Int {
         parse(input: input)
-            .filter { isValid2(result: $0.0, numbers: $0.1) }
+            .filter { isValid2(result: $0.0, acc: 0, numbers: $0.1[...]) }
             .map(\.0)
             .reduce(0, +)
     }

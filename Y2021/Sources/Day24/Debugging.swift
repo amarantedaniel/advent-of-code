@@ -3,17 +3,17 @@ import Foundation
 extension Instruction: CustomStringConvertible {
     var description: String {
         switch self {
-        case .inp(let address):
+        case let .inp(address):
             return "inp \(address)"
-        case .add(let address, let element):
+        case let .add(address, element):
             return "add \(address) \(element)"
-        case .mul(let address, let element):
+        case let .mul(address, element):
             return "mul \(address) \(element)"
-        case .div(let address, let element):
+        case let .div(address, element):
             return "div \(address) \(element)"
-        case .mod(let address, let element):
+        case let .mod(address, element):
             return "mod \(address) \(element)"
-        case .eql(let address, let element):
+        case let .eql(address, element):
             return "eql \(address) \(element)"
         }
     }
@@ -22,9 +22,9 @@ extension Instruction: CustomStringConvertible {
 extension Element: CustomStringConvertible {
     var description: String {
         switch self {
-        case .address(let address):
+        case let .address(address):
             return address.description
-        case .number(let number):
+        case let .number(number):
             return number.description
         }
     }

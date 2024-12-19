@@ -1,123 +1,138 @@
 import AdventOfCode
 import Foundation
 
-struct Memory {
-    var registers: [Register: Int]
-}
-
 enum Register {
     case a, b, c
 }
 
-enum Operand {
+enum Output {
+    case none
+    case value(Int)
+    case jump(Int)
+}
+
+enum ComboOperand {
     case literal(Int)
     case register(Register)
+
+    init(value: Int) {
+        switch value {
+        case 0...3:
+            self = .literal(value)
+        case 4:
+            self = .register(.a)
+        case 5:
+            self = .register(.b)
+        case 6:
+            self = .register(.c)
+        default:
+            fatalError()
+        }
+    }
 }
 
 enum Instruction: Int {
-    case adv = 0
-    case bxl
-    case bst
-    case jnz
-    case bxc
-    case out
-    case bdv
-    case cdv
+    case adv, bxl, bst, jnz, bxc, out, bdv, cdv
 }
 
 struct Operation {
     let instruction: Instruction
-    let operand: Operand
+    let operand: Int
 }
 
 enum Parser {
-    static func parse(input: String) -> (Memory, [Operation]) {
+    static func parse(input: String) -> ([Register: Int], [Operation]) {
         let lines = input.split(separator: "\n")
-        let memory = Memory(
-            registers: [
-                .a: Int(lines[0].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!,
-                .b: Int(lines[1].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!,
-                .c: Int(lines[2].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
-            ]
-        )
-        var operations: [Operation] = []
+        let registers: [Register: Int] = [
+            .a: Int(lines[0].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!,
+            .b: Int(lines[1].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!,
+            .c: Int(lines[2].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
+        ]
         let numbers = lines[3]
             .split(separator: ":")[1]
             .split(separator: ",")
             .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
-        var isInstruction = true
-        var instruction: Instruction!
-        for number in numbers {
-            defer { isInstruction.toggle() }
-            if isInstruction {
-                instruction = Instruction(rawValue: number)!
-            } else {
-                switch number {
-                case 0...3:
-                    operations.append(
-                        Operation(instruction: instruction, operand: .literal(number))
-                    )
-                case 4:
-                    operations.append(
-                        Operation(instruction: instruction, operand: .register(.a))
-                    )
-                case 5:
-                    operations.append(
-                        Operation(instruction: instruction, operand: .register(.b))
-                    )
-                case 6:
-                    operations.append(
-                        Operation(instruction: instruction, operand: .register(.c))
-                    )
-                default:
-                    fatalError()
-                }
-            }
+        let operations = stride(from: 0, to: numbers.count, by: 2).map { i in
+            Operation(instruction: Instruction(rawValue: numbers[i])!, operand: numbers[i + 1])
         }
-        return (memory, operations)
+        return (registers, operations)
     }
 }
 
 struct Day17: AdventDay {
-    private func execute(memory: inout Memory, operation: Operation) -> Int? {
-        print(operation)
+    private func execute(registers: inout [Register: Int], operation: Operation) -> Output {
         switch (operation.instruction, operation.operand) {
-        case (.adv, .literal(let value)):
-            let numerator = memory.registers[.a]!
-            let denominator = Int(powl(2, Double(value)))
-            memory.registers[.a] = numerator / denominator
-        case (.adv, .register(let register)):
-            let numerator = memory.registers[.a]!
-            let denominator = Int(powl(2, Double(memory.registers[register]!)))
-            memory.registers[.a] = numerator / denominator
-        case (.bxl, _):
-            fatalError()
-        case (.bst, .register(let register)):
-            memory.registers[.b] = memory.registers[register]! % 8
-        case (.bst, .literal(let value)):
-            memory.registers[.b] = value % 8
-        case (.jnz, _):
-            fatalError()
+        case let (.adv, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                let numerator = registers[.a]!
+                let denominator = Int(powl(2, Double(value)))
+                registers[.a] = numerator / denominator
+            case let .register(value):
+                let numerator = registers[.a]!
+                let denominator = Int(powl(2, Double(registers[value]!)))
+                registers[.a] = numerator / denominator
+            }
+        case let (.bxl, value):
+            registers[.b] = registers[.b]! ^ value
+        case let (.bst, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                registers[.b] = value % 8
+            case let .register(value):
+                registers[.b] = registers[value]! % 8
+            }
+        case let (.jnz, value):
+            guard registers[.a] != 0 else { break }
+            return .jump(value / 2)
         case (.bxc, _):
-            fatalError()
-        case (.out, .register(let register)):
-            return memory.registers[register]! % 8
-        case (.out, .literal(let value)):
-            return value % 8
-        case (.bdv, _):
-            fatalError()
-        case (.cdv, _):
-            fatalError()
+            registers[.b] = registers[.b]! ^ registers[.c]!
+        case let (.out, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                return .value(value % 8)
+            case let .register(value):
+                return .value(registers[value]! % 8)
+            }
+        case let (.bdv, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                let numerator = registers[.a]!
+                let denominator = Int(powl(2, Double(value)))
+                registers[.b] = numerator / denominator
+            case let .register(value):
+                let numerator = registers[.a]!
+                let denominator = Int(powl(2, Double(registers[value]!)))
+                registers[.b] = numerator / denominator
+            }
+        case let (.cdv, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                let numerator = registers[.a]!
+                let denominator = Int(powl(2, Double(value)))
+                registers[.c] = numerator / denominator
+            case let .register(value):
+                let numerator = registers[.a]!
+                let denominator = Int(powl(2, Double(registers[value]!)))
+                registers[.c] = numerator / denominator
+            }
         }
-        return nil
+        return .none
     }
 
     func part1(input: String) throws -> String {
-        var (memory, operations) = Parser.parse(input: input)
+        var (registers, operations) = Parser.parse(input: input)
         var output: [Int] = []
-        for operation in operations {
-            if let value = execute(memory: &memory, operation: operation) {
+        var index = 0
+        while index < operations.count {
+            switch execute(registers: &registers, operation: operations[index]) {
+            case .none:
+                index += 1
+            case let .value(value):
                 output.append(value)
+                index += 1
+            case let .jump(value):
+                index = value
             }
         }
         return output.compactMap(\.description).joined(separator: ",")

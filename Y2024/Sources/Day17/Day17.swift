@@ -120,6 +120,53 @@ struct Day17: AdventDay {
         return .none
     }
 
+    private func printCode(operation: Operation) -> String {
+        switch (operation.instruction, operation.operand) {
+        case let (.adv, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                return "a = a / 2ˆ\(value)"
+            case let .register(value):
+                return "a = a / 2ˆ\(value)"
+            }
+        case let (.bxl, value):
+            return "b = b ^ \(value)"
+        case let (.bst, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                return "b = \(value) % 8"
+            case let .register(value):
+                return "b = \(value) % 8"
+            }
+        case let (.jnz, value):
+            return "if a != 0 { jmp \(value) }"
+        case (.bxc, _):
+            return "b = b xor c"
+        case let (.out, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                return "print(\(value) % 8)"
+            case let .register(value):
+                return "print(\(value) % 8)"
+            }
+
+        case let (.bdv, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                return "b = a / 2ˆ\(value)"
+            case let .register(value):
+                return "b = a / 2ˆ\(value)"
+            }
+        case let (.cdv, value):
+            switch ComboOperand(value: value) {
+            case let .literal(value):
+                return "c = a / 2ˆ\(value)"
+            case let .register(value):
+                return "c = a / 2ˆ\(value)"
+            }
+        }
+    }
+
     func part1(input: String) throws -> String {
         var (registers, operations) = Parser.parse(input: input)
         var output: [Int] = []
@@ -139,6 +186,10 @@ struct Day17: AdventDay {
     }
 
     func part2(input: String) throws -> String {
-        throw AdventError.notImplemented
+        var (_, operations) = Parser.parse(input: input)
+        for operation in operations {
+            print(printCode(operation: operation))
+        }
+        return ""
     }
 }

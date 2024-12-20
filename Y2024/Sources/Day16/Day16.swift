@@ -101,6 +101,35 @@ struct Day16: AdventDay {
         }
         fatalError()
     }
+    
+    func allBestPaths(
+        map: [[Square]],
+        bestScore: Int,
+        state: State,
+        destination: Point,
+        visited: Set<Point>
+    ) -> Set<Point> {
+        if state.distance > bestScore {
+            return []
+        }
+        if state.point == destination && state.distance == bestScore {
+            return visited
+        }
+        var count: Set<Point> = []
+        for (direction, neighboor) in neighboors(for: state.point, in: map) where !visited.contains(neighboor) {
+            let distance = state.distance + 1 + (direction == state.direction ? 0 : 1_000)
+            count.formUnion(
+                allBestPaths(
+                    map: map,
+                    bestScore: bestScore,
+                    state: State(distance: distance, direction: direction, point: neighboor),
+                    destination: destination,
+                    visited: visited.union([neighboor])
+                )
+            )
+        }
+        return count
+    }
 
     private func neighboors(for point: Point, in map: [[Square]]) -> [(Direction, Point)] {
         var result: [(Direction, Point)] = []
@@ -120,6 +149,13 @@ struct Day16: AdventDay {
     }
 
     func part2(input: String) throws -> Int {
-        throw AdventError.notImplemented
+        let (start, end, map) = Parser.parse(input: input)
+        return allBestPaths(
+            map: map,
+            bestScore: dijkstra(map: map, source: start, destination: end),
+            state: .init(distance: 0, direction: .right, point: start),
+            destination: end,
+            visited: [start]
+        ).count
     }
 }

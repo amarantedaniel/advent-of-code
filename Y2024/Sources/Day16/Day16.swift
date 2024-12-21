@@ -20,11 +20,11 @@ enum Square: Character {
     case path = "."
 }
 
-enum Direction: CaseIterable {
-    case up
-    case down
-    case left
-    case right
+enum Direction: String, CaseIterable {
+    case up = "^"
+    case down = "v"
+    case left = "<"
+    case right = ">"
 
     func vector() -> Point {
         switch self {
@@ -36,6 +36,19 @@ enum Direction: CaseIterable {
             return Point(x: -1, y: 0)
         case .right:
             return Point(x: 1, y: 0)
+        }
+    }
+
+    func inverse() -> Direction {
+        switch self {
+        case .up:
+            return .down
+        case .down:
+            return .up
+        case .left:
+            return .right
+        case .right:
+            return .left
         }
     }
 }
@@ -65,6 +78,11 @@ enum Parser {
     }
 }
 
+struct PointAndDirection: Hashable {
+    let point: Point
+    let direction: Direction
+}
+
 struct State: Hashable, Comparable {
     let distance: Int
     let direction: Direction
@@ -80,82 +98,76 @@ struct State: Hashable, Comparable {
 }
 
 struct Day16: AdventDay {
-    func dijkstra(map: [[Square]], source: Point, destination: Point) -> Int {
-        var distances: [Point: Int] = [source: 0]
-        var previous: [Point: Point] = [:]
+    func dijkstra(
+        map: [[Square]],
+        source: Point,
+        startDirection: Direction,
+        destination: Point,
+        backwards: Bool
+    ) -> [PointAndDirection: Int] {
+        var distances: [PointAndDirection: Int] = [.init(point: source, direction: startDirection): 0]
         var heap = Heap<State>()
-        heap.insert(.init(distance: 0, direction: .right, point: source))
+        heap.insert(.init(distance: 0, direction: startDirection, point: source))
         while !heap.isEmpty {
             let current = heap.removeMin()
-            if current.point == destination {
-                return distances[current.point]!
+
+            if let next = moveForward(from: current.point, direction: backwards ? current.direction.inverse() : current.direction, in: map) {
+                let distance = distances[.init(point: current.point, direction: current.direction)]! + 1
+                if distance < distances[.init(point: next, direction: current.direction), default: Int.max] {
+                    distances[.init(point: next, direction: current.direction)] = distance
+                    heap.insert(.init(distance: distance, direction: current.direction, point: next))
+                }
             }
-            for (direction, neighboor) in neighboors(for: current.point, in: map) {
-                let distance = distances[current.point]! + 1 + (direction == current.direction ? 0 : 1_000)
-                if distance < distances[neighboor, default: Int.max] {
-                    distances[neighboor] = distance
-                    previous[neighboor] = current.point
-                    heap.insert(.init(distance: distance, direction: direction, point: neighboor))
+
+            for direction in Direction.allCases {
+                let distance = distances[.init(point: current.point, direction: current.direction)]! + 1_000
+                if distance < distances[.init(point: current.point, direction: direction), default: Int.max] {
+                    distances[.init(point: current.point, direction: direction)] = distance
+                    heap.insert(.init(distance: distance, direction: direction, point: current.point))
                 }
             }
         }
-        fatalError()
-    }
-    
-    func allBestPaths(
-        map: [[Square]],
-        bestScore: Int,
-        state: State,
-        destination: Point,
-        visited: Set<Point>
-    ) -> Set<Point> {
-        if state.distance > bestScore {
-            return []
-        }
-        if state.point == destination && state.distance == bestScore {
-            return visited
-        }
-        var count: Set<Point> = []
-        for (direction, neighboor) in neighboors(for: state.point, in: map) where !visited.contains(neighboor) {
-            let distance = state.distance + 1 + (direction == state.direction ? 0 : 1_000)
-            count.formUnion(
-                allBestPaths(
-                    map: map,
-                    bestScore: bestScore,
-                    state: State(distance: distance, direction: direction, point: neighboor),
-                    destination: destination,
-                    visited: visited.union([neighboor])
-                )
-            )
-        }
-        return count
+        return distances
     }
 
-    private func neighboors(for point: Point, in map: [[Square]]) -> [(Direction, Point)] {
-        var result: [(Direction, Point)] = []
-        for direction in Direction.allCases {
-            let vector = direction.vector()
-            let neighboor = point + vector
-            if map[neighboor.y][neighboor.x] == .path {
-                result.append((direction, neighboor))
-            }
+    private func moveForward(from point: Point, direction: Direction, in map: [[Square]]) -> Point? {
+        let next = point + direction.vector()
+        if map[next.y][next.x] == .path {
+            return next
         }
-        return result
+        return nil
     }
 
     func part1(input: String) throws -> Int {
         let (start, end, map) = Parser.parse(input: input)
-        return dijkstra(map: map, source: start, destination: end)
+        let distances = dijkstra(map: map, source: start, startDirection: .right, destination: end, backwards: false)
+        return Direction.allCases
+            .compactMap { distances[.init(point: end, direction: $0)] }
+            .min()!
     }
 
     func part2(input: String) throws -> Int {
         let (start, end, map) = Parser.parse(input: input)
-        return allBestPaths(
-            map: map,
-            bestScore: dijkstra(map: map, source: start, destination: end),
-            state: .init(distance: 0, direction: .right, point: start),
-            destination: end,
-            visited: [start]
-        ).count
+        let distancesFromStart = dijkstra(map: map, source: start, startDirection: .right, destination: end, backwards: false)
+
+        let goalDistance = Direction.allCases
+            .compactMap { distancesFromStart[.init(point: end, direction: $0)] }
+            .min()!
+
+        let distancesFromEnd = Dictionary(uniqueKeysWithValues: Direction.allCases.map { direction in
+            (direction, dijkstra(map: map, source: end, startDirection: direction, destination: start, backwards: true))
+        })
+
+        var points: Set<Point> = []
+        for (pointAndDirection, distanceFromStart) in distancesFromStart {
+            for direction in Direction.allCases {
+                if let distanceFromEnd = distancesFromEnd[direction]![pointAndDirection] {
+                    if distanceFromStart + distanceFromEnd == goalDistance {
+                        points.insert(pointAndDirection.point)
+                    }
+                }
+            }
+        }
+        return points.count
     }
 }

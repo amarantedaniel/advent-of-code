@@ -117,31 +117,21 @@ struct Day21: AdventDay {
     }
 
     private func movements(for characters: [Character]) -> [[ArrowKey]] {
-        if characters.count == 1 {
-            return [[]]
-        }
-        var result: [[ArrowKey]] = []
-        for movement in move(from: characters[0], to: characters[1]) {
-            for remaining in movements(for: Array(characters[1...])) {
-                let aux = movement + [.submit] + remaining
-                result.append(aux)
+        guard characters.count > 1 else { return [[]] }
+        return move(from: characters[0], to: characters[1]).flatMap { movement in
+            movements(for: Array(characters[1...])).map { remaining in
+                movement + [.submit] + remaining
             }
         }
-        return result
     }
 
     private func movements(for keys: [ArrowKey]) -> [[ArrowKey]] {
-        if keys.count == 1 {
-            return [[]]
-        }
-        var result: [[ArrowKey]] = []
-        for movement in move(from: keys[0], to: keys[1]) {
-            for remaining in movements(for: Array(keys[1...])) {
-                let aux = movement + [.submit] + remaining
-                result.append(aux)
+        guard keys.count > 1 else { return [[]] }
+        return move(from: keys[0], to: keys[1]).flatMap { movement in
+            movements(for: Array(keys[1...])).map { remaining in
+                movement + [.submit] + remaining
             }
         }
-        return result
     }
 
     private func split(keys: [ArrowKey]) -> [[ArrowKey]] {
@@ -154,55 +144,45 @@ struct Day21: AdventDay {
         return result
     }
 
-    private func solve(
-        keys: [ArrowKey],
-        depth: Int,
-        maxDepth: Int,
-        cache: inout [Cache: Int]
-    ) -> Int {
+    private func solve(keys: [ArrowKey], depth: Int, maxDepth: Int, cache: inout [Cache: Int]) -> Int {
         var result = 0
         for keys in split(keys: keys) {
             if let cached = cache[.init(keys: keys, depth: depth)] {
                 result += cached
                 continue
             }
-            var minimum = Int.max
+            var partial = Int.max
             for movement in movements(for: [.submit] + keys) {
                 if depth == maxDepth {
-                    minimum = min(movement.count, minimum)
+                    partial = min(movement.count, partial)
                 } else {
-                    minimum = min(solve(keys: movement, depth: depth + 1, maxDepth: maxDepth, cache: &cache), minimum)
+                    partial = min(solve(keys: movement, depth: depth + 1, maxDepth: maxDepth, cache: &cache), partial)
                 }
             }
-            cache[.init(keys: keys, depth: depth)] = minimum
-            result += minimum
+            cache[.init(keys: keys, depth: depth)] = partial
+            result += partial
+        }
+        return result
+    }
+
+    private func solve(input: String, maxDepth: Int) -> Int {
+        var result = 0
+        var cache: [Cache: Int] = [:]
+        for line in input.split(separator: "\n") {
+            var minimum = Int.max
+            for possibility in movements(for: ["A"] + Array(line)) {
+                minimum = min(solve(keys: possibility, depth: 1, maxDepth: maxDepth, cache: &cache), minimum)
+            }
+            result += minimum * Int(line.dropLast())!
         }
         return result
     }
 
     func part1(input: String) throws -> Int {
-        var result = 0
-        var cache: [Cache: Int] = [:]
-        for line in input.split(separator: "\n") {
-            var minimum = Int.max
-            for possibility in movements(for: ["A"] + Array(line)) {
-                minimum = min(solve(keys: possibility, depth: 1, maxDepth: 2, cache: &cache), minimum)
-            }
-            result += minimum * Int(line.dropLast())!
-        }
-        return result
+        solve(input: input, maxDepth: 2)
     }
 
     func part2(input: String) throws -> Int {
-        var result = 0
-        var cache: [Cache: Int] = [:]
-        for line in input.split(separator: "\n") {
-            var minimum = Int.max
-            for possibility in movements(for: ["A"] + Array(line)) {
-                minimum = min(solve(keys: possibility, depth: 1, maxDepth: 25, cache: &cache), minimum)
-            }
-            result += minimum * Int(line.dropLast())!
-        }
-        return result
+        solve(input: input, maxDepth: 25)
     }
 }

@@ -14,6 +14,11 @@ enum ArrowKey: Hashable, CustomStringConvertible {
     }
 }
 
+struct Cache: Hashable {
+    let keys: [ArrowKey]
+    let depth: Int
+}
+
 struct Point: Equatable, Hashable, AdditiveArithmetic {
     static let zero = Point(x: 0, y: 0)
     let x: Int
@@ -125,25 +130,19 @@ struct Day21: AdventDay {
         return result
     }
 
-
-    private func movements(for keys: [ArrowKey], cache: inout [[ArrowKey]: [[ArrowKey]]]) -> [[ArrowKey]] {
+    private func movements(for keys: [ArrowKey]) -> [[ArrowKey]] {
         if keys.count == 1 {
             return [[]]
         }
-        if let result = cache[keys] {
-            return result
-        }
         var result: [[ArrowKey]] = []
         for movement in move(from: keys[0], to: keys[1]) {
-            for remaining in movements(for: Array(keys[1...]), cache: &cache) {
+            for remaining in movements(for: Array(keys[1...])) {
                 let aux = movement + [.submit] + remaining
                 result.append(aux)
             }
         }
-        cache[keys] = result
         return result
     }
-
 
     private func split(keys: [ArrowKey]) -> [[ArrowKey]] {
         var result: [[ArrowKey]] = []
@@ -159,18 +158,23 @@ struct Day21: AdventDay {
         keys: [ArrowKey],
         depth: Int,
         maxDepth: Int,
-        cache: inout [[ArrowKey]: [[ArrowKey]]]
+        cache: inout [Cache: Int]
     ) -> Int {
         var result = 0
         for keys in split(keys: keys) {
+            if let cached = cache[.init(keys: keys, depth: depth)] {
+                result += cached
+                continue
+            }
             var minimum = Int.max
-            for movement in movements(for: [.submit] + keys, cache: &cache) {
+            for movement in movements(for: [.submit] + keys) {
                 if depth == maxDepth {
                     minimum = min(movement.count, minimum)
                 } else {
                     minimum = min(solve(keys: movement, depth: depth + 1, maxDepth: maxDepth, cache: &cache), minimum)
                 }
             }
+            cache[.init(keys: keys, depth: depth)] = minimum
             result += minimum
         }
         return result
@@ -178,7 +182,7 @@ struct Day21: AdventDay {
 
     func part1(input: String) throws -> Int {
         var result = 0
-        var cache: [[ArrowKey]: [[ArrowKey]]] = [:]
+        var cache: [Cache: Int] = [:]
         for line in input.split(separator: "\n") {
             var minimum = Int.max
             for possibility in movements(for: ["A"] + Array(line)) {
@@ -191,12 +195,11 @@ struct Day21: AdventDay {
 
     func part2(input: String) throws -> Int {
         var result = 0
-        var cache: [[ArrowKey]: [[ArrowKey]]] = [:]
+        var cache: [Cache: Int] = [:]
         for line in input.split(separator: "\n") {
-            print(line)
             var minimum = Int.max
             for possibility in movements(for: ["A"] + Array(line)) {
-                minimum = min(solve(keys: possibility, depth: 1, maxDepth: 8, cache: &cache), minimum)
+                minimum = min(solve(keys: possibility, depth: 1, maxDepth: 25, cache: &cache), minimum)
             }
             result += minimum * Int(line.dropLast())!
         }

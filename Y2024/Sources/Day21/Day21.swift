@@ -38,8 +38,6 @@ enum Numpad {
 }
 
 struct ArrowPad: Hashable {
-    let keys: [ArrowKey]
-
     static let positions: [ArrowKey: Point] = [
         .direction(.up): Point(x: 1, y: 0), .submit: Point(x: 2, y: 0),
         .direction(.left): Point(x: 0, y: 1), .direction(.down): Point(x: 1, y: 1), .direction(.right): Point(x: 2, y: 1),
@@ -101,124 +99,107 @@ struct Day21: AdventDay {
         return false
     }
 
-    func move(from origin: Character, to destination: Character) -> [ArrowPad] {
+    func move(from origin: Character, to destination: Character) -> [[ArrowKey]] {
         let p1 = Numpad.positions[origin]!
         let p2 = Numpad.positions[destination]!
-        return move(from: p1, to: p2, forbidden: Point(x: 0, y: 3)).map { .init(keys: $0.map { ArrowKey.direction($0) }) }
+        return move(from: p1, to: p2, forbidden: Point(x: 0, y: 3)).map { $0.map { ArrowKey.direction($0) } }
     }
 
-    func move(from origin: ArrowKey, to destination: ArrowKey) -> [ArrowPad] {
+    func move(from origin: ArrowKey, to destination: ArrowKey) -> [[ArrowKey]] {
         let p1 = ArrowPad.positions[origin]!
         let p2 = ArrowPad.positions[destination]!
-        return move(from: p1, to: p2, forbidden: Point(x: 0, y: 0)).map { .init(keys: $0.map { ArrowKey.direction($0) }) }
+        return move(from: p1, to: p2, forbidden: Point(x: 0, y: 0)).map { $0.map { ArrowKey.direction($0) } }
     }
 
-    private func movements(for characters: [Character]) -> [ArrowPad] {
+    private func movements(for characters: [Character]) -> [[ArrowKey]] {
         if characters.count == 1 {
-            return [ArrowPad(keys: [])]
+            return [[]]
         }
-        var result: [ArrowPad] = []
+        var result: [[ArrowKey]] = []
         for movement in move(from: characters[0], to: characters[1]) {
             for remaining in movements(for: Array(characters[1...])) {
-                let aux = ArrowPad(keys: movement.keys + [.submit] + remaining.keys)
+                let aux = movement + [.submit] + remaining
                 result.append(aux)
             }
         }
         return result
     }
 
-    private func movements(for arrowPad: ArrowPad, cache: inout [ArrowPad: [ArrowPad]]) -> [ArrowPad] {
-        if arrowPad.keys.count == 1 {
-            return [ArrowPad(keys: [])]
+
+    private func movements(for keys: [ArrowKey], cache: inout [[ArrowKey]: [[ArrowKey]]]) -> [[ArrowKey]] {
+        if keys.count == 1 {
+            return [[]]
         }
-        if let result = cache[arrowPad] {
+        if let result = cache[keys] {
             return result
         }
-        var result: [ArrowPad] = []
-        for movement in move(from: arrowPad.keys[0], to: arrowPad.keys[1]) {
-            for remaining in movements(for: ArrowPad(keys: Array(arrowPad.keys[1...])), cache: &cache) {
-                let aux = ArrowPad(keys: movement.keys + [.submit] + remaining.keys)
+        var result: [[ArrowKey]] = []
+        for movement in move(from: keys[0], to: keys[1]) {
+            for remaining in movements(for: Array(keys[1...]), cache: &cache) {
+                let aux = movement + [.submit] + remaining
                 result.append(aux)
             }
         }
-        cache[arrowPad] = result
+        cache[keys] = result
         return result
     }
 
-    func calculate(possibilities: [ArrowPad], cache: inout [ArrowPad: [ArrowPad]]) -> [ArrowPad] {
-        var result: [ArrowPad] = []
-        for possibility in possibilities {
-            result.append(contentsOf: movements(for: ArrowPad(keys: [.submit] + possibility.keys), cache: &cache))
-        }
-        return result
-    }
-
-    private func calculate(text: String, count: Int) -> Int {
-        var cache: [ArrowPad: [ArrowPad]] = [:]
-        var current = movements(for: Array("A\(text)"))
-        print("first")
-        for value in current {
-            print(value)
-        }
-//        for i in 0..<count {
-        current = calculate(possibilities: current, cache: &cache)
-//        }
-        print("second")
-        for value in current {
-            print(value)
-        }
-        return current.map(\.keys.count).min()!
-    }
 
     private func split(keys: [ArrowKey]) -> [[ArrowKey]] {
         var result: [[ArrowKey]] = []
-        var currrent: [ArrowKey] = []
-        var didStart = false
-        for key in keys {
-            
+        var start = 0
+        for i in start..<keys.count where keys[i] == .submit {
+            result.append(Array(keys[start...i]))
+            start = i + 1
+        }
+        return result
+    }
 
-
+    private func solve(
+        keys: [ArrowKey],
+        depth: Int,
+        maxDepth: Int,
+        cache: inout [[ArrowKey]: [[ArrowKey]]]
+    ) -> Int {
+        var result = 0
+        for keys in split(keys: keys) {
+            var minimum = Int.max
+            for movement in movements(for: [.submit] + keys, cache: &cache) {
+                if depth == maxDepth {
+                    minimum = min(movement.count, minimum)
+                } else {
+                    minimum = min(solve(keys: movement, depth: depth + 1, maxDepth: maxDepth, cache: &cache), minimum)
+                }
+            }
+            result += minimum
         }
         return result
     }
 
     func part1(input: String) throws -> Int {
         var result = 0
-        var cache: [ArrowPad: [ArrowPad]] = [:]
-        let keys: [ArrowKey] = [.submit, .direction(.left), .submit, .direction(.right), .submit]
-        print(keys.split(separator: .submit))
-        print(movements(for: ArrowPad(keys: keys), cache: &cache))
-//        for line in input.split(separator: "\n") {
-//            let count = calculate(text: String(line), count: 2)
-//            result += count * Int(line.dropLast())!
-//        }
+        var cache: [[ArrowKey]: [[ArrowKey]]] = [:]
+        for line in input.split(separator: "\n") {
+            var minimum = Int.max
+            for possibility in movements(for: ["A"] + Array(line)) {
+                minimum = min(solve(keys: possibility, depth: 1, maxDepth: 2, cache: &cache), minimum)
+            }
+            result += minimum * Int(line.dropLast())!
+        }
         return result
     }
 
     func part2(input: String) throws -> Int {
         var result = 0
-        var cache: [ArrowPad: [ArrowPad]] = [:]
-//        print("up")
-//        for value in calculate(possibilities: [.init(keys: [.direction(.up), .submit])], cache: &cache) {
-//            print(value)
-//        }
-//        print("down")
-//        for value in calculate(possibilities: [.init(keys: [.direction(.down), .submit])], cache: &cache) {
-//            print(value)
-//        }
-//        print("left")
-//        for value in calculate(possibilities: [.init(keys: [.direction(.left), .submit])], cache: &cache) {
-//            print(value)
-//        }
-//
-//        print("right")
-//        for value in calculate(possibilities: [.init(keys: [.direction(.right), .submit])], cache: &cache) {
-//            print(value)
-//        }
-//        for line in input.split(separator: "\n") {
-//            let count = calculate(text: String(line), count: 25)
-//            result += count * Int(line.dropLast())!
-//        }
+        var cache: [[ArrowKey]: [[ArrowKey]]] = [:]
+        for line in input.split(separator: "\n") {
+            print(line)
+            var minimum = Int.max
+            for possibility in movements(for: ["A"] + Array(line)) {
+                minimum = min(solve(keys: possibility, depth: 1, maxDepth: 8, cache: &cache), minimum)
+            }
+            result += minimum * Int(line.dropLast())!
+        }
         return result
     }
 }

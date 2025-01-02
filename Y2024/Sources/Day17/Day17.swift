@@ -41,6 +41,14 @@ struct Operation {
 }
 
 enum Parser {
+    static func parseRawProgram(input: String) -> [Int] {
+        let lines = input.split(separator: "\n")
+        return lines[3]
+            .split(separator: ":")[1]
+            .split(separator: ",")
+            .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+    }
+
     static func parse(input: String) -> ([Register: Int], [Operation]) {
         let lines = input.split(separator: "\n")
         let registers: [Register: Int] = [
@@ -65,13 +73,9 @@ struct Day17: AdventDay {
         case let (.adv, value):
             switch ComboOperand(value: value) {
             case let .literal(value):
-                let numerator = registers[.a]!
-                let denominator = Int(powl(2, Double(value)))
-                registers[.a] = numerator / denominator
+                registers[.a] = registers[.a]! >> value
             case let .register(value):
-                let numerator = registers[.a]!
-                let denominator = Int(powl(2, Double(registers[value]!)))
-                registers[.a] = numerator / denominator
+                registers[.a] = registers[.a]! >> registers[value]!
             }
         case let (.bxl, value):
             registers[.b] = registers[.b]! ^ value
@@ -97,78 +101,22 @@ struct Day17: AdventDay {
         case let (.bdv, value):
             switch ComboOperand(value: value) {
             case let .literal(value):
-                let numerator = registers[.a]!
-                let denominator = Int(powl(2, Double(value)))
-                registers[.b] = numerator / denominator
+                registers[.b] = registers[.a]! >> value
             case let .register(value):
-                let numerator = registers[.a]!
-                let denominator = Int(powl(2, Double(registers[value]!)))
-                registers[.b] = numerator / denominator
+                registers[.b] = registers[.a]! >> registers[value]!
             }
         case let (.cdv, value):
             switch ComboOperand(value: value) {
             case let .literal(value):
-                let numerator = registers[.a]!
-                let denominator = Int(powl(2, Double(value)))
-                registers[.c] = numerator / denominator
+                registers[.c] = registers[.a]! >> value
             case let .register(value):
-                let numerator = registers[.a]!
-                let denominator = Int(powl(2, Double(registers[value]!)))
-                registers[.c] = numerator / denominator
+                registers[.c] = registers[.a]! >> registers[value]!
             }
         }
         return .none
     }
 
-    private func printCode(operation: Operation) -> String {
-        switch (operation.instruction, operation.operand) {
-        case let (.adv, value):
-            switch ComboOperand(value: value) {
-            case let .literal(value):
-                return "a = a / 2ˆ\(value)"
-            case let .register(value):
-                return "a = a / 2ˆ\(value)"
-            }
-        case let (.bxl, value):
-            return "b = b ^ \(value)"
-        case let (.bst, value):
-            switch ComboOperand(value: value) {
-            case let .literal(value):
-                return "b = \(value) % 8"
-            case let .register(value):
-                return "b = \(value) % 8"
-            }
-        case let (.jnz, value):
-            return "if a != 0 { jmp \(value) }"
-        case (.bxc, _):
-            return "b = b xor c"
-        case let (.out, value):
-            switch ComboOperand(value: value) {
-            case let .literal(value):
-                return "print(\(value) % 8)"
-            case let .register(value):
-                return "print(\(value) % 8)"
-            }
-
-        case let (.bdv, value):
-            switch ComboOperand(value: value) {
-            case let .literal(value):
-                return "b = a / 2ˆ\(value)"
-            case let .register(value):
-                return "b = a / 2ˆ\(value)"
-            }
-        case let (.cdv, value):
-            switch ComboOperand(value: value) {
-            case let .literal(value):
-                return "c = a / 2ˆ\(value)"
-            case let .register(value):
-                return "c = a / 2ˆ\(value)"
-            }
-        }
-    }
-
-    func part1(input: String) throws -> String {
-        var (registers, operations) = Parser.parse(input: input)
+    private func solve(operations: [Operation], registers: inout [Register: Int]) -> [Int] {
         var output: [Int] = []
         var index = 0
         while index < operations.count {
@@ -179,17 +127,52 @@ struct Day17: AdventDay {
                 output.append(value)
                 index += 1
             case let .jump(value):
-                index = value
+                index = Int(value)
             }
         }
-        return output.compactMap(\.description).joined(separator: ",")
+        return output
+    }
+
+    private func solve(registers: inout [Register: Int]) -> [Int] {
+        var result: [Int] = []
+        repeat {
+            registers[.b] = registers[.a]! % 8
+            registers[.b] = registers[.b]! ^ 2
+            registers[.c] = registers[.a]! >> registers[.b]!
+            registers[.b] = registers[.b]! ^ registers[.c]!
+            registers[.b] = registers[.b]! ^ 7
+            registers[.a] = registers[.a]! >> 3
+            result.append(registers[.b]! % 8)
+        } while registers[.a]! != 0
+        return result
+    }
+
+    func part1(input: String) throws -> String {
+        var (registers, operations) = Parser.parse(input: input)
+        return solve(operations: operations, registers: &registers)
+            .compactMap(\.description)
+            .joined(separator: ",")
+    }
+
+    func solve(partial: Int, output: [Int]) -> Int? {
+        var registers: [Register: Int] = [:]
+        for i in 0..<8 {
+            registers = [.a: partial << 3 + i, .b: 0, .c: 0]
+            let solution = solve(registers: &registers)
+            if solution == output.suffix(solution.count) {
+                if solution.count == output.count {
+                    return partial << 3 + i
+                }
+                if let solution = solve(partial: partial << 3 + i, output: output) {
+                    return solution
+                }
+            }
+        }
+        return nil
     }
 
     func part2(input: String) throws -> String {
-        var (_, operations) = Parser.parse(input: input)
-        for operation in operations {
-            print(printCode(operation: operation))
-        }
-        return ""
+        let output = Parser.parseRawProgram(input: input)
+        return "\(solve(partial: 0, output: output)!)"
     }
 }

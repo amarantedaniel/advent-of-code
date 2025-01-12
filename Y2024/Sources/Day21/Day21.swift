@@ -1,17 +1,8 @@
 import AdventOfCode
 
-enum ArrowKey: Hashable, CustomStringConvertible {
+enum ArrowKey: Hashable {
     case direction(Direction)
     case submit
-
-    var description: String {
-        switch self {
-        case let .direction(direction):
-            direction.rawValue
-        case .submit:
-            "A"
-        }
-    }
 }
 
 struct Cache: Hashable {
@@ -49,15 +40,11 @@ struct ArrowPad: Hashable {
     ]
 }
 
-enum Direction: String, CustomStringConvertible {
+enum Direction: String {
     case up = "^"
     case down = "v"
     case left = "<"
     case right = ">"
-
-    var description: String {
-        rawValue
-    }
 
     func vector() -> Point {
         switch self {

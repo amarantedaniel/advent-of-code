@@ -1,5 +1,11 @@
 import AdventOfCode
 
+extension Array where Element == Int {
+    var asNumber: Int {
+        reduce(0) { $0 * 10 + $1 }
+    }
+}
+
 struct Day03: AdventDay {
     private func parse(input: String) -> [[Int]] {
         input
@@ -33,7 +39,7 @@ struct Day03: AdventDay {
                     }
                 }
             }
-            result += Int(numbers.map(\.description).joined(separator: ""))!
+            result += numbers.asNumber
         }
         return result
     }

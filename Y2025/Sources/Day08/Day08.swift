@@ -61,15 +61,7 @@ struct Day08: AdventDay {
             } else {
                 circuits.append([pair.p1, pair.p2])
             }
-//            print()
-//            for circuit in circuits {
-//                print(circuit)
-//            }
-//            print()
         }
-//        for circuit in circuits {
-//            print(circuit.count)
-//        }
         return circuits
             .map(\.count)
             .sorted(by: >)
